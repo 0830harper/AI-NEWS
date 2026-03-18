@@ -22,7 +22,8 @@ export default function Header() {
   const pathname = usePathname()
 
   return (
-    <header className="sticky top-0 z-10 bg-white border-b border-gray-100 h-13 flex items-center justify-between px-6">
+    <header className="sticky top-0 z-10 bg-white border-b border-gray-100">
+      <div className="max-w-7xl mx-auto px-4 h-13 flex items-center justify-between">
       <Link href="/" className="text-base font-medium text-gray-900 tracking-tight">
         AI NEWS
       </Link>
@@ -57,6 +58,7 @@ export default function Header() {
           Source
         </Link>
       </nav>
+      </div>
     </header>
   )
 }

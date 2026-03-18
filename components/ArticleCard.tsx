@@ -29,25 +29,24 @@ export default function ArticleCard({ article }: Props) {
   }
 
   return (
-    <div onClick={handleClick} className="cursor-pointer group mb-4 break-inside-avoid">
+    <div onClick={handleClick} className="cursor-pointer group mb-8 break-inside-avoid">
       {imgReady ? (
         /* ── 有图模式：色块内嵌图片，文字在色块下方 ── */
         <>
           <div
-            className="rounded-none overflow-hidden transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-xl"
+            className="overflow-hidden transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-xl"
             style={{ backgroundColor: article.card_color }}
           >
-            <div className="p-6">
+            <div className="pt-10 px-10">
               <img
                 src={article.thumbnail!}
                 alt=""
-                className="w-full rounded-none object-cover block"
-                style={{ maxHeight: '240px' }}
+                className="w-full block"
               />
             </div>
           </div>
-          <div className="pt-2.5 px-0.5">
-            <h2 className="text-base font-medium text-gray-900 leading-snug mb-1">
+          <div className="pt-3 px-0.5">
+            <h2 className="text-lg font-semibold text-gray-900 leading-snug mb-1.5">
               {article.title}
             </h2>
             {article.description && (
@@ -69,10 +68,10 @@ export default function ArticleCard({ article }: Props) {
       ) : (
         /* ── 无图模式：标题文字在色块内部 ── */
         <div
-          className="rounded-none overflow-hidden transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-xl p-5 flex flex-col justify-between min-h-36"
+          className="overflow-hidden transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-xl p-10 flex flex-col justify-between min-h-52"
           style={{ backgroundColor: article.card_color }}
         >
-          <h2 className="text-base font-semibold text-gray-900 leading-snug">
+          <h2 className="text-lg font-semibold text-gray-900 leading-snug">
             {article.title}
           </h2>
           {article.description && (

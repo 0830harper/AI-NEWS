@@ -29,7 +29,7 @@ export default function MasonryGrid({ articles }: Props) {
   const sorted = interleave(articles)
 
   return (
-    <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+    <div className="columns-1 sm:columns-2 lg:columns-3 gap-8">
       {sorted.map((article) => (
         <ArticleCard key={article.id} article={article} />
       ))}
