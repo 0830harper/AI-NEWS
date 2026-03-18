@@ -11,9 +11,9 @@ import {
 } from './NavIcons'
 
 const categories = [
-  { slug: '',        label: 'Latest',      Icon: LightningIcon },
-  { slug: 'app',    label: 'App',         Icon: PhoneIcon     },
-  { slug: 'design', label: 'Design / ART',Icon: BrushIcon     },
+  { slug: '',        label: 'Pick',        Icon: LightningIcon },
+  { slug: 'app',    label: 'Tool',        Icon: PhoneIcon     },
+  { slug: 'design', label: 'Visual',      Icon: BrushIcon     },
   { slug: 'uxui',   label: 'UX / UI',     Icon: LayersIcon    },
   { slug: 'tech',   label: 'Tech',        Icon: ChipIcon      },
 ]
