@@ -1,0 +1,92 @@
+'use client'
+import { useState, useEffect, useCallback } from 'react'
+import MasonryGrid from './MasonryGrid'
+import { Article } from '../types'
+
+interface Props {
+  category: string
+}
+
+const PAGE_SIZE = 20
+
+export default function CategoryFeed({ category }: Props) {
+  const [articles, setArticles] = useState<Article[]>([])
+  const [page, setPage] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [hasMore, setHasMore] = useState(true)
+
+  const fetchPage = useCallback(async (pageNum: number) => {
+    setLoading(true)
+    try {
+      const res = await fetch(
+        `/api/articles?category=${category}&limit=${PAGE_SIZE}&page=${pageNum}`
+      )
+      const data = await res.json()
+      const newArticles: Article[] = data.articles || []
+      setArticles(prev => pageNum === 1 ? newArticles : [...prev, ...newArticles])
+      setHasMore(newArticles.length > 0)
+      setPage(pageNum)
+    } catch (e) {
+      console.error('Failed to load articles:', e)
+    } finally {
+      setLoading(false)
+      setInitialLoading(false)
+    }
+  }, [category])
+
+  useEffect(() => {
+    setArticles([])
+    setPage(0)
+    setHasMore(true)
+    setInitialLoading(true)
+    fetchPage(1)
+  }, [category, fetchPage])
+
+  if (initialLoading) {
+    return (
+      <div className="flex justify-center py-24">
+        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (articles.length === 0) {
+    return (
+      <div className="text-center py-24 text-gray-400 text-sm">
+        No articles yet. Run the fetcher to populate content.
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <MasonryGrid articles={articles} />
+
+      {hasMore && (
+        <div className="flex justify-center mt-10 mb-6">
+          <button
+            onClick={() => fetchPage(page + 1)}
+            disabled={loading}
+            className="px-8 py-2.5 bg-gray-900 text-white text-sm tracking-wide hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 border border-white border-t-transparent rounded-full animate-spin" />
+                Loading...
+              </span>
+            ) : (
+              'Load More'
+            )}
+          </button>
+        </div>
+      )}
+
+      {!hasMore && articles.length > 0 && (
+        <div className="text-center mt-10 mb-6 text-xs text-gray-400 tracking-widest uppercase">
+          You&apos;ve reached the end
+        </div>
+      )}
+    </div>
+  )
+}
