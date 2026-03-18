@@ -98,7 +98,19 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   }).fetch(),
   'itsnicethat':    () => new RssFetcher('https://www.itsnicethat.com/rss').fetch(),
 
-  // UXUI
+  // UXUI - RSS
+  'ux-collective':  () => new RssFetcher('https://uxdesign.cc/feed').fetch(),
+  'ux-planet':      () => new RssFetcher('https://uxplanet.org/feed').fetch(),
+  'nngroup':        () => new RssFetcher('https://www.nngroup.com/feed/rss/').fetch(),
+  'smashing-mag':   () => new RssFetcher('https://www.smashingmagazine.com/feed/').fetch(),
+  'alistapart':     () => new RssFetcher('https://alistapart.com/main/feed/').fetch(),
+  'ux-booth':       () => new RssFetcher('https://www.uxbooth.com/feed/').fetch(),
+  'sidebar':        () => new RssFetcher('https://sidebar.io/feed.xml').fetch(),
+  'boxes-arrows':   () => new RssFetcher('https://boxesandarrows.com/feed/').fetch(),
+  'ux-mag':         () => new RssFetcher('https://uxmag.com/feed').fetch(),
+  'ux-matters':     () => new RssFetcher('https://www.uxmatters.com/index.xml').fetch(),
+
+  // UXUI - Scraper (legacy)
   'lapa-ninja':     () => new GenericScraper('https://www.lapa.ninja/category/artificial-intelligence/', {
     listSelector: '.site-card, article, .item',
     titleSelector: 'h3, h2, .title',
