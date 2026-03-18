@@ -1,18 +1,19 @@
 import MasonryGrid from '../components/MasonryGrid'
 import { Article } from '../types'
+import { supabaseAdmin } from '../lib/supabase'
+
+export const revalidate = 300 // 5分钟缓存
 
 async function getLatestArticles(): Promise<Article[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  try {
-    const res = await fetch(`${baseUrl}/api/articles?category=latest&limit=50`, {
-      next: { revalidate: 300 }, // 5分钟缓存
-    })
-    if (!res.ok) return []
-    const data = await res.json()
-    return data.articles || []
-  } catch {
-    return []
-  }
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString()
+  const { data, error } = await supabaseAdmin
+    .from('articles')
+    .select('*')
+    .gte('published_at', ninetyDaysAgo)
+    .order('published_at', { ascending: false })
+    .limit(50)
+  if (error) return []
+  return data || []
 }
 
 export default async function HomePage() {
