@@ -3,12 +3,16 @@ import { Article } from '../types'
 
 async function getLatestArticles(): Promise<Article[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/articles?category=latest&limit=50`, {
-    next: { revalidate: 300 }, // 5分钟缓存
-  })
-  if (!res.ok) return []
-  const data = await res.json()
-  return data.articles || []
+  try {
+    const res = await fetch(`${baseUrl}/api/articles?category=latest&limit=50`, {
+      next: { revalidate: 300 }, // 5分钟缓存
+    })
+    if (!res.ok) return []
+    const data = await res.json()
+    return data.articles || []
+  } catch {
+    return []
+  }
 }
 
 export default async function HomePage() {

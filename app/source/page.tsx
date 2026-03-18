@@ -1,12 +1,16 @@
 import SourceStatusTable from '../../components/SourceStatusTable'
 import { Source } from '../../types'
+import { supabaseAdmin } from '../../lib/supabase'
+
+export const dynamic = 'force-dynamic'
 
 async function getSources(): Promise<Source[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/sources`, { next: { revalidate: 60 } })
-  if (!res.ok) return []
-  const data = await res.json()
-  return data.sources || []
+  const { data, error } = await supabaseAdmin
+    .from('sources')
+    .select('*')
+    .order('name')
+  if (error) return []
+  return data || []
 }
 
 export default async function SourcePage() {
