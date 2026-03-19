@@ -64,7 +64,13 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const cleaned = (data || []).filter((a: any) => !hasGarbageTitle(a))
+  const cleaned = (data || [])
+    .map((a: any) => ({
+      ...a,
+      // Strip leading '?' and clusters of 2+ '?' from titles (encoding failures)
+      title: (a.title || '').replace(/\?{2,}/g, '').replace(/^\?+/, '').trim()
+    }))
+    .filter((a: any) => !hasGarbageTitle(a))
   const diversified = diversify(cleaned, MAX_PER_SOURCE).slice(0, limit)
 
   return NextResponse.json({ articles: diversified, page, limit })

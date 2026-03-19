@@ -27,13 +27,15 @@ export abstract class BaseFetcher {
       .replace(/&#(\d+);/g, (_, dec) => {
         try { return String.fromCodePoint(parseInt(dec, 10)) } catch { return '' }
       })
-    return text.trim()
+    // Remove clusters of 2+ consecutive '?' (encoding failures like 「」→??)
+    text = text.replace(/\?{2,}/g, '').replace(/^\?+/, '').trim()
+    return text
   }
 
   protected isGarbageTitle(title: string): boolean {
     if (!title || title.length < 2) return true
-    // If more than 30% of chars are '?', it's an encoding failure
+    // If more than 20% of chars are '?', it's an encoding failure
     const qCount = (title.match(/\?/g) || []).length
-    return qCount >= 4 && qCount / title.length > 0.3
+    return qCount >= 3 && qCount / title.length > 0.2
   }
 }
