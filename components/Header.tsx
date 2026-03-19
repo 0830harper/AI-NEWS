@@ -7,7 +7,6 @@ import {
   BrushIcon,
   LayersIcon,
   ChipIcon,
-  SignalIcon,
 } from './NavIcons'
 
 const categories = [
@@ -46,17 +45,6 @@ export default function Header() {
             </Link>
           )
         })}
-        <Link
-          href="/source"
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors
-            ${pathname === '/source'
-              ? 'bg-gray-900 text-white'
-              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-            }`}
-        >
-          <SignalIcon size={17} />
-          Source
-        </Link>
       </nav>
       </div>
     </header>
