@@ -5,11 +5,12 @@ import { Article } from '../types'
 
 interface Props {
   category: string
+  showCategory?: boolean
 }
 
 const PAGE_SIZE = 20
 
-export default function CategoryFeed({ category }: Props) {
+export default function CategoryFeed({ category, showCategory = false }: Props) {
   const [articles, setArticles] = useState<Article[]>([])
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -61,7 +62,7 @@ export default function CategoryFeed({ category }: Props) {
 
   return (
     <div>
-      <MasonryGrid articles={articles} />
+      <MasonryGrid articles={articles} showCategory={showCategory} />
 
       {hasMore && (
         <div className="flex justify-center mt-10 mb-6">

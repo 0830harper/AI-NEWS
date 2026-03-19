@@ -5,12 +5,22 @@ import { formatDate } from '../lib/utils'
 
 interface Props {
   article: Article
+  showCategory?: boolean
 }
 
-export default function ArticleCard({ article }: Props) {
+const CATEGORY_LABELS: Record<string, string> = {
+  app: 'Tool',
+  design: 'Visual',
+  uxui: 'UX/UI',
+  tech: 'Tech',
+}
+
+export default function ArticleCard({ article, showCategory = false }: Props) {
   const [imgReady, setImgReady] = useState(false)
   const sourceName = article.sources?.name || 'Unknown'
   const sourceDate = formatDate(article.published_at)
+  const category = article.sources?.category
+  const categoryLabel = category ? CATEGORY_LABELS[category] : null
 
   useEffect(() => {
     if (!article.thumbnail) return
@@ -55,11 +65,16 @@ export default function ArticleCard({ article }: Props) {
               </p>
             )}
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-400">
+              <span className="text-xs font-medium text-gray-400 flex items-center gap-2">
                 {article.heat_score > 5 && (
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 mr-1 align-middle" />
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 align-middle" />
                 )}
                 {sourceName}
+                {showCategory && categoryLabel && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-gray-100 text-gray-500">
+                    {categoryLabel}
+                  </span>
+                )}
               </span>
               <span className="text-xs text-gray-300">{sourceDate}</span>
             </div>
@@ -80,11 +95,16 @@ export default function ArticleCard({ article }: Props) {
             </p>
           )}
           <div className="flex items-center justify-between mt-3">
-            <span className="text-xs font-medium text-gray-600">
+            <span className="text-xs font-medium text-gray-600 flex items-center gap-2">
               {article.heat_score > 5 && (
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 mr-1 align-middle" />
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 align-middle" />
               )}
               {sourceName}
+              {showCategory && categoryLabel && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-white/40 text-gray-600">
+                  {categoryLabel}
+                </span>
+              )}
             </span>
             <span className="text-xs text-gray-500">{sourceDate}</span>
           </div>

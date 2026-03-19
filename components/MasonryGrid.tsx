@@ -3,6 +3,7 @@ import ArticleCard from './ArticleCard'
 
 interface Props {
   articles: Article[]
+  showCategory?: boolean
 }
 
 function interleave(articles: Article[]): Article[] {
@@ -17,7 +18,7 @@ function interleave(articles: Article[]): Article[] {
   return result
 }
 
-export default function MasonryGrid({ articles }: Props) {
+export default function MasonryGrid({ articles, showCategory = false }: Props) {
   if (!articles.length) {
     return (
       <div className="text-center text-gray-400 py-20 text-sm">
@@ -31,7 +32,7 @@ export default function MasonryGrid({ articles }: Props) {
   return (
     <div className="columns-1 sm:columns-2 lg:columns-3 gap-8">
       {sorted.map((article) => (
-        <ArticleCard key={article.id} article={article} />
+        <ArticleCard key={article.id} article={article} showCategory={showCategory} />
       ))}
     </div>
   )
