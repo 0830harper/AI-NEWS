@@ -32,11 +32,9 @@ export async function GET(req: NextRequest) {
   const windowSize = limit
   const offset = (page - 1) * windowSize
 
-  // Pick (latest): 最近7天按点击率; 分类页: 90天按发布时间
   const isLatest = category === 'latest'
-  const cutoff = new Date(
-    Date.now() - (isLatest ? 7 : 90) * 24 * 3600 * 1000
-  ).toISOString()
+  // 全部用90天窗口，按发布时间倒序
+  const cutoff = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString()
 
   // For category filtering, first get matching source IDs
   let sourceIds: number[] | null = null
@@ -55,7 +53,7 @@ export async function GET(req: NextRequest) {
     .from('articles')
     .select('*, sources(name, slug, category, home_url)')
     .gte('published_at', cutoff)
-    .order(isLatest ? 'heat_score' : 'published_at', { ascending: false })
+    .order('published_at', { ascending: false })
     .range(offset, offset + windowSize - 1)
 
   if (sourceIds !== null) {
