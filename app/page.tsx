@@ -8,7 +8,7 @@ async function getLatestArticles(): Promise<Article[]> {
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString()
   const { data, error } = await supabaseAdmin
     .from('articles')
-    .select('*')
+    .select('*, sources(name, slug, category, home_url)')
     .gte('published_at', ninetyDaysAgo)
     .order('published_at', { ascending: false })
     .limit(50)
