@@ -90,23 +90,23 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             {article.title}
           </h2>
           {article.description && (
-            <p className="text-xs text-gray-700 leading-relaxed mt-2 line-clamp-2 opacity-80">
+            <p className="text-xs text-white/70 leading-relaxed mt-2 line-clamp-2">
               {article.description}
             </p>
           )}
           <div className="flex items-center justify-between mt-3">
-            <span className="text-xs font-medium text-gray-600 flex items-center gap-2">
+            <span className="text-xs font-medium text-white/60 flex items-center gap-2">
               {article.heat_score > 5 && (
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 align-middle" />
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-white align-middle" />
               )}
               {sourceName}
               {showCategory && categoryLabel && (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-white/40 text-gray-600">
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-white/20 text-white">
                   {categoryLabel}
                 </span>
               )}
             </span>
-            <span className="text-xs text-gray-500">{sourceDate}</span>
+            <span className="text-xs text-white/40">{sourceDate}</span>
           </div>
         </div>
       )}
