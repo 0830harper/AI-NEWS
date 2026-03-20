@@ -7,9 +7,7 @@ const sources = [
   { name: 'The Verge AI',       slug: 'verge-ai',         category: 'app',    fetch_type: 'rss',     fetch_url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml', home_url: 'https://theverge.com/ai-artificial-intelligence' },
   { name: 'Reddit r/artificial',slug: 'reddit-ai',        category: 'app',    fetch_type: 'api',     fetch_url: 'https://www.reddit.com/r/artificial/hot.json?limit=20', home_url: 'https://www.reddit.com/r/artificial/' },
   { name: 'MIT Tech Review',    slug: 'mit-tech-review',  category: 'app',    fetch_type: 'rss',     fetch_url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed', home_url: 'https://www.technologyreview.com/topic/artificial-intelligence/' },
-  { name: 'DeepMind Blog',      slug: 'deepmind',         category: 'app',    fetch_type: 'rss',     fetch_url: 'https://deepmind.google/blog/rss.xml', home_url: 'https://deepmind.google/blog/' },
   { name: 'AI Today',           slug: 'aitoday',          category: 'app',    fetch_type: 'scraper', fetch_url: 'https://www.aitoday.io/', home_url: 'https://www.aitoday.io/' },
-  { name: 'Radar AI',           slug: 'radar-ai',         category: 'app',    fetch_type: 'scraper', fetch_url: 'https://radarai.top/', home_url: 'https://radarai.top/' },
   { name: '量子位',              slug: 'qbitai',           category: 'app',    fetch_type: 'rss',     fetch_url: 'https://www.qbitai.com/feed', home_url: 'https://www.qbitai.com/' },
   // DESIGN (4 sources)
   { name: 'Behance',            slug: 'behance',          category: 'design', fetch_type: 'rss',     fetch_url: 'https://feeds.feedburner.com/behance/vorr', home_url: 'https://www.behance.net/' },
@@ -33,6 +31,8 @@ const sources = [
   { name: 'Google AI Dev',      slug: 'google-ai-dev',    category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://developers.googleblog.com/feeds/posts/default', home_url: 'https://ai.google.dev/' },
   { name: 'LangChain Blog',     slug: 'langchain',        category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://blog.langchain.dev/rss/', home_url: 'https://www.langchain.com/' },
   { name: 'arXiv cs.AI',        slug: 'arxiv-ai',         category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://arxiv.org/rss/cs.AI', home_url: 'https://arxiv.org/list/cs.AI/recent' },
+  { name: 'DeepMind Blog',      slug: 'deepmind',         category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://deepmind.google/blog/rss.xml', home_url: 'https://deepmind.google/blog/' },
+  { name: 'Radar AI',           slug: 'radar-ai',         category: 'tech',   fetch_type: 'scraper', fetch_url: 'https://radarai.top/', home_url: 'https://radarai.top/' },
 ]
 
 async function seed() {
