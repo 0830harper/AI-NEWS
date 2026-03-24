@@ -44,6 +44,9 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   'verge-ai':       () => new RssFetcher('https://www.theverge.com/rss/ai-artificial-intelligence/index.xml').fetch(),
   'reddit-ai':      () => new RedditFetcher('artificial').fetch(),
   'mit-tech-review':() => new RssFetcher('https://www.technologyreview.com/topic/artificial-intelligence/feed').fetch(),
+  'venturebeat':    () => new RssFetcher('https://venturebeat.com/feed/').fetch(),
+  'aibusiness':     () => new RssFetcher('https://aibusiness.com/rss.xml').fetch(),
+  'arstechnica':    () => new RssFetcher('https://feeds.arstechnica.com/arstechnica/index').fetch(),
   'deepmind':       () => new RssFetcher('https://deepmind.google/blog/rss.xml').fetch(),
   'wired-ai':       () => new RssFetcher('https://www.wired.com/feed/category/artificial-intelligence/latest/rss').fetch(),
   'jiqizhixin':     () => new RssFetcher('https://www.jiqizhixin.com/rss').fetch(),
@@ -71,6 +74,12 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
 
   // DESIGN
   'behance':        () => new RssFetcher('https://feeds.feedburner.com/behance/vorr').fetch(),
+  'design-milk':    () => new RssFetcher('https://design-milk.com/feed/').fetch(),
+  'creativebloq':   () => new RssFetcher('https://www.creativebloq.com/feeds/all').fetch(),
+  'colossal':       () => new RssFetcher('https://www.thisiscolossal.com/feed/').fetch(),
+  'designboom':     () => new RssFetcher('https://www.designboom.com/feed/').fetch(),
+  'dezeen':         () => new RssFetcher('https://www.dezeen.com/feed/').fetch(),
+  'thedieline':     () => new RssFetcher('https://www.thedieline.com/rss').fetch(),
   'dribbble':       () => new RssFetcher('https://dribbble.com/shots/popular.rss').fetch(),
   'zcool':          () => new GenericScraper('https://www.zcool.com.cn/top/0/0.do', {
     listSelector: '.work-list-box li, .item',
@@ -109,6 +118,7 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   'boxes-arrows':   () => new RssFetcher('https://boxesandarrows.com/feed/').fetch(),
   'ux-mag':         () => new RssFetcher('https://uxmag.com/feed').fetch(),
   'ux-matters':     () => new RssFetcher('https://www.uxmatters.com/index.xml').fetch(),
+  'bootcamp-ux':    () => new RssFetcher('https://bootcamp.uxdesign.cc/feed').fetch(),
 
   // UXUI - Scraper (legacy)
   'lapa-ninja':     () => new GenericScraper('https://www.lapa.ninja/category/artificial-intelligence/', {
@@ -184,8 +194,11 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
     linkSelector: 'a',
     baseUrl: 'https://openrouter.ai',
   }).fetch(),
+  'openai':         () => new RssFetcher('https://openai.com/blog/rss.xml').fetch(),
   'google-ai-dev':  () => new RssFetcher('https://developers.googleblog.com/feeds/posts/default').fetch(),
   'langchain':      () => new RssFetcher('https://blog.langchain.dev/rss/').fetch(),
+  'paperswithcode': () => new RssFetcher('https://paperswithcode.com/rss.xml').fetch(),
+  'towardsdatascience': () => new RssFetcher('https://towardsdatascience.com/feed').fetch(),
   'modelzoo':       () => new GenericScraper('https://modelzoo.co/', {
     listSelector: '.model-card, article',
     titleSelector: 'h3, h2, .title',
