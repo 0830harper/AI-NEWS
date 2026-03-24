@@ -1,8 +1,8 @@
 {
   "crons": [
-    {
-      "path": "/api/cron",
-      "schedule": "0 8 * * *"
-    }
+    { "path": "/api/cron/app",    "schedule": "0 0 * * *" },
+    { "path": "/api/cron/design", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/uxui",   "schedule": "0 12 * * *" },
+    { "path": "/api/cron/tech",   "schedule": "0 18 * * *" }
   ]
 }

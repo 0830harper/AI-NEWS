@@ -216,6 +216,73 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   }).fetch(),
 }
 
+export async function fetchByCategory(category: string) {
+  const { data: sources } = await supabaseAdmin
+    .from('sources')
+    .select('*')
+    .eq('is_active', true)
+    .eq('category', category)
+
+  if (!sources) return
+
+  for (const source of sources) {
+    const fetcher = FETCHER_MAP[source.slug]
+    if (!fetcher) continue
+
+    console.log(`Fetching ${source.name}...`)
+    try {
+      const articles = await fetcher()
+
+      await enrichWithOgImages(articles)
+
+      for (const article of articles) {
+        if (!article.url || !article.title) continue
+        const urlHash = hashUrl(article.url)
+        const heatScore = calcHeatScore(article.raw_score, article.published_at)
+
+        await supabaseAdmin.from('articles').upsert(
+          {
+            source_id: source.id,
+            title: article.title.slice(0, 500),
+            description: article.description?.slice(0, 1000) || null,
+            url: article.url,
+            url_hash: urlHash,
+            author: article.author || null,
+            thumbnail: article.thumbnail || null,
+            published_at: article.published_at.toISOString(),
+            raw_score: article.raw_score,
+            heat_score: heatScore,
+            card_color: randomColor(),
+            tags: article.tags,
+          },
+          { onConflict: 'url_hash', ignoreDuplicates: false }
+        )
+      }
+
+      await supabaseAdmin
+        .from('sources')
+        .update({
+          last_fetched_at: new Date().toISOString(),
+          fetch_status: 'ok',
+          error_msg: null,
+        })
+        .eq('id', source.id)
+
+      console.log(`✓ ${source.name}: ${articles.length} articles`)
+    } catch (err: any) {
+      console.error(`✗ ${source.name}: ${err.message}`)
+      await supabaseAdmin
+        .from('sources')
+        .update({
+          last_fetched_at: new Date().toISOString(),
+          fetch_status: 'error',
+          error_msg: err.message?.slice(0, 500),
+        })
+        .eq('id', source.id)
+    }
+  }
+}
+
 export async function fetchAll() {
   const { data: sources } = await supabaseAdmin
     .from('sources')
