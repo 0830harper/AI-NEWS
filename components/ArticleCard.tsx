@@ -17,7 +17,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const DESC_LIMIT = 100
 
-/** Keep only complete sentences that fit within DESC_LIMIT characters. */
+/** Keep only complete sentences that fit within DESC_LIMIT characters, add ellipsis if trimmed. */
 function trimDesc(text: string): string {
   const sentences = text.match(/[^.!?]+[.!?]*/g) ?? [text]
   let result = ''
@@ -26,7 +26,8 @@ function trimDesc(text: string): string {
     if (next.length > DESC_LIMIT) break
     result = next
   }
-  return result || text.slice(0, DESC_LIMIT)
+  const trimmed = result || text.slice(0, DESC_LIMIT)
+  return trimmed.length < text.trim().length ? trimmed + '…' : trimmed
 }
 
 export default function ArticleCard({ article, showCategory = false }: Props) {
