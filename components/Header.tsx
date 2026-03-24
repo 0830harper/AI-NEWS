@@ -28,18 +28,15 @@ export default function Header() {
             <Link
               key={cat.slug}
               href={href}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors
-                ${isActive
-                  ? 'bg-gray-900 text-white'
-                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-                }`}
+              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors
+                ${isActive ? 'text-gray-900' : 'text-gray-400 hover:text-gray-700'}`}
             >
               <Image
                 src={cat.icon}
                 alt={cat.label}
-                width={22}
-                height={22}
-                className="shrink-0"
+                width={32}
+                height={32}
+                className="shrink-0 transition-transform duration-150 group-hover:scale-125"
               />
               {cat.label}
             </Link>
