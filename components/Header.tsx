@@ -34,8 +34,8 @@ export default function Header() {
               <Image
                 src={cat.icon}
                 alt={cat.label}
-                width={32}
-                height={32}
+                width={36}
+                height={36}
                 className="shrink-0 transition-transform duration-150 group-hover:scale-125"
               />
               {cat.label}
