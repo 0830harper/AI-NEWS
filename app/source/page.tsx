@@ -22,6 +22,7 @@ export default async function SourcePage() {
     <div>
       <div className="mb-6 flex items-center gap-4">
         <h1 className="text-lg font-medium text-gray-900">📡 Source Status</h1>
+        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{sources.length} total</span>
         <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">{okCount} ok</span>
         {errCount > 0 && (
           <span className="text-xs text-red-500 bg-red-50 px-2 py-1 rounded-full">{errCount} errors</span>
