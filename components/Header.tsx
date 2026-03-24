@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 
 const categories = [
-  { slug: '',        label: 'Pick',   icon: '/icons/pick.svg',   size: 34 },
+  { slug: '',        label: 'Pick',   icon: '/icons/pick.svg',   size: 32 },
   { slug: 'app',    label: 'Tool',   icon: '/icons/tool.svg',   size: 36 },
   { slug: 'design', label: 'Visual', icon: '/icons/visual.svg', size: 36 },
   { slug: 'uxui',   label: 'UX / UI',icon: '/icons/uxui.svg',   size: 38 },
