@@ -1,20 +1,14 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  LightningIcon,
-  PhoneIcon,
-  BrushIcon,
-  LayersIcon,
-  ChipIcon,
-} from './NavIcons'
+import Image from 'next/image'
 
 const categories = [
-  { slug: '',        label: 'Pick',        Icon: LightningIcon },
-  { slug: 'app',    label: 'Tool',        Icon: PhoneIcon     },
-  { slug: 'design', label: 'Visual',      Icon: BrushIcon     },
-  { slug: 'uxui',   label: 'UX / UI',     Icon: LayersIcon    },
-  { slug: 'tech',   label: 'Tech',        Icon: ChipIcon      },
+  { slug: '',        label: 'Pick',   icon: '/icons/pick.svg'   },
+  { slug: 'app',    label: 'Tool',   icon: '/icons/tool.svg'   },
+  { slug: 'design', label: 'Visual', icon: '/icons/visual.svg' },
+  { slug: 'uxui',   label: 'UX / UI',icon: '/icons/uxui.svg'   },
+  { slug: 'tech',   label: 'Tech',   icon: '/icons/tech.svg'   },
 ]
 
 export default function Header() {
@@ -40,7 +34,13 @@ export default function Header() {
                   : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                 }`}
             >
-              <cat.Icon size={17} />
+              <Image
+                src={cat.icon}
+                alt={cat.label}
+                width={22}
+                height={22}
+                className="shrink-0"
+              />
               {cat.label}
             </Link>
           )

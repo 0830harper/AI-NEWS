@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <filter id="sticker" x="-25%" y="-30%" width="150%" height="160%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="4" result="e"/>
+      <feFlood flood-color="#ffffff" result="w"/>
+      <feComposite in="w" in2="e" operator="in" result="wo"/>
+      <feOffset dx="3" dy="4" in="e" result="so"/>
+      <feFlood flood-color="#bebebe" result="sc"/>
+      <feComposite in="sc" in2="so" operator="in" result="s"/>
+      <feMerge>
+        <feMergeNode in="s"/>
+        <feMergeNode in="wo"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#sticker)" transform="translate(8,12)">
+    <path d="M32 52 C14 52 2 42 2 32 C2 22 14 12 32 12 C50 12 62 22 62 32 C62 42 50 52 32 52Z" fill="#1a1a1a" transform="translate(2,2)"/>
+    <path d="M32 52 C14 52 2 42 2 32 C2 22 14 12 32 12 C50 12 62 22 62 32 C62 42 50 52 32 52Z" fill="#ffffff" stroke="#1a1a1a" stroke-width="3.5"/>
+    <circle cx="32" cy="32" r="14" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="2.8"/>
+    <circle cx="32" cy="32" r="8" fill="#1a1a1a"/>
+    <circle cx="26" cy="26" r="4" fill="#ffffff"/>
+    <circle cx="37" cy="36" r="2" fill="#ffffff"/>
+    <line x1="10" y1="18" x2="4"  y2="9"  stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+    <line x1="21" y1="13" x2="18" y2="5"  stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+    <line x1="32" y1="12" x2="32" y2="4"  stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+    <line x1="43" y1="13" x2="46" y2="5"  stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+    <line x1="54" y1="18" x2="60" y2="9"  stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+    <path d="M2 32 C14 52 50 52 62 32" fill="none" stroke="#1a1a1a" stroke-width="3.2"/>
+  </g>
+</svg>
