@@ -77,7 +77,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
               {article.title}
             </h2>
             {article.description && (
-              <p className="text-sm text-gray-500 leading-relaxed mb-1.5">
+              <p className="text-[13px] text-gray-500 leading-relaxed mb-1.5">
                 {trimDesc(article.description)}
               </p>
             )}
@@ -107,7 +107,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             {article.title}
           </h2>
           {article.description && (
-            <p className={`text-sm font-medium leading-relaxed mt-2 ${lightBg ? 'text-gray-500' : 'text-white/90'}`}>
+            <p className={`text-[13px] font-medium leading-relaxed mt-2 ${lightBg ? 'text-gray-500' : 'text-white/90'}`}>
               {trimDesc(article.description)}
             </p>
           )}
