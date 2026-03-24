@@ -107,23 +107,23 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             {article.title}
           </h2>
           {article.description && (
-            <p className={`text-sm font-medium leading-relaxed mt-2 ${lightBg ? 'text-gray-700' : 'text-white/90'}`}>
+            <p className={`text-sm font-medium leading-relaxed mt-2 ${lightBg ? 'text-gray-500' : 'text-white/90'}`}>
               {trimDesc(article.description)}
             </p>
           )}
           <div className="flex items-center justify-between mt-3">
-            <span className={`text-sm font-bold flex items-center gap-2 ${lightBg ? 'text-gray-600' : 'text-white/80'}`}>
+            <span className={`text-sm font-bold flex items-center gap-2 ${lightBg ? 'text-gray-500' : 'text-white/80'}`}>
               {article.heat_score > 5 && (
                 <span className={`inline-block w-1.5 h-1.5 rounded-full align-middle ${lightBg ? 'bg-gray-600' : 'bg-white'}`} />
               )}
               {sourceName}
               {showCategory && categoryLabel && (
-                <span className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${lightBg ? 'bg-black/10 text-gray-700' : 'bg-white/20 text-white'}`}>
+                <span className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${lightBg ? 'bg-black/10 text-gray-500' : 'bg-white/20 text-white'}`}>
                   {categoryLabel}
                 </span>
               )}
             </span>
-            <span className={`text-sm font-medium ${lightBg ? 'text-gray-500' : 'text-white/60'}`}>{sourceDate}</span>
+            <span className={`text-sm font-medium ${lightBg ? 'text-gray-400' : 'text-white/60'}`}>{sourceDate}</span>
           </div>
         </div>
       )}
