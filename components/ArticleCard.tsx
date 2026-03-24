@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Article } from '../types'
 import { formatDate } from '../lib/utils'
+import { isLightColor } from '../lib/colors'
 
 interface Props {
   article: Article
@@ -36,6 +37,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
   const sourceDate = formatDate(article.published_at)
   const category = article.sources?.category
   const categoryLabel = category ? CATEGORY_LABELS[category] : null
+  const lightBg = isLightColor(article.card_color || '#4D96FF')
 
   useEffect(() => {
     if (!article.thumbnail) return
@@ -105,23 +107,23 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             {article.title}
           </h2>
           {article.description && (
-            <p className="text-sm font-medium text-white/90 leading-relaxed mt-2">
+            <p className={`text-sm font-medium leading-relaxed mt-2 ${lightBg ? 'text-gray-700' : 'text-white/90'}`}>
               {trimDesc(article.description)}
             </p>
           )}
           <div className="flex items-center justify-between mt-3">
-            <span className="text-sm font-bold text-white/80 flex items-center gap-2">
+            <span className={`text-sm font-bold flex items-center gap-2 ${lightBg ? 'text-gray-600' : 'text-white/80'}`}>
               {article.heat_score > 5 && (
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-white align-middle" />
+                <span className={`inline-block w-1.5 h-1.5 rounded-full align-middle ${lightBg ? 'bg-gray-600' : 'bg-white'}`} />
               )}
               {sourceName}
               {showCategory && categoryLabel && (
-                <span className="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide bg-white/20 text-white">
+                <span className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${lightBg ? 'bg-black/10 text-gray-700' : 'bg-white/20 text-white'}`}>
                   {categoryLabel}
                 </span>
               )}
             </span>
-            <span className="text-sm font-medium text-white/60">{sourceDate}</span>
+            <span className={`text-sm font-medium ${lightBg ? 'text-gray-500' : 'text-white/60'}`}>{sourceDate}</span>
           </div>
         </div>
       )}
