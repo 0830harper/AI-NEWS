@@ -2,9 +2,14 @@ import Parser from 'rss-parser'
 import { BaseFetcher } from '../base'
 import { FetchedArticle } from '../../types'
 
+const FETCH_TIMEOUT_MS = 15000
+
 const parser = new Parser({
   customFields: {
     item: ['media:content', 'media:thumbnail', 'enclosure'],
+  },
+  requestOptions: {
+    timeout: FETCH_TIMEOUT_MS,
   },
 })
 
