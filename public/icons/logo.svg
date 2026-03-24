@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="90" viewBox="0 0 340 90" fill="none">
+  <defs>
+    <filter id="sticker" x="-8%" y="-25%" width="116%" height="150%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="5" result="e"/>
+      <feFlood flood-color="#ffffff" result="w"/>
+      <feComposite in="w" in2="e" operator="in" result="wo"/>
+      <feOffset dx="4" dy="5" in="e" result="so"/>
+      <feFlood flood-color="#bebebe" result="sc"/>
+      <feComposite in="sc" in2="so" operator="in" result="s"/>
+      <feMerge>
+        <feMergeNode in="s"/>
+        <feMergeNode in="wo"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#sticker)">
+    <text x="170" y="62"
+      text-anchor="middle"
+      font-family="'Arial Black', 'Helvetica Neue', sans-serif"
+      font-size="58" font-weight="900"
+      fill="#1a1a1a"
+      stroke="#1a1a1a" stroke-width="20" stroke-linejoin="round"
+      paint-order="stroke fill">AINEWS</text>
+    <text x="170" y="62"
+      text-anchor="middle"
+      font-family="'Arial Black', 'Helvetica Neue', sans-serif"
+      font-size="58" font-weight="900"
+      fill="#ffffff"
+      stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"
+      paint-order="stroke fill">AINEWS</text>
+  </g>
+</svg>
