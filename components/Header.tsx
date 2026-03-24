@@ -18,7 +18,7 @@ export default function Header() {
     <header className="sticky top-0 z-10 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 h-13 flex items-center justify-between">
       <Link href="/">
-        <Image src="/icons/logo.svg" alt="AINEWS" width={120} height={32} priority />
+        <Image src="/icons/logo.svg" alt="AINEWS" width={200} height={52} priority />
       </Link>
       <nav className="flex gap-1">
         {categories.map((cat) => {
