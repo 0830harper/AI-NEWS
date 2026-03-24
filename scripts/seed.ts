@@ -7,7 +7,7 @@ const sources = [
   { name: 'The Verge AI',       slug: 'verge-ai',         category: 'app',    fetch_type: 'rss',     fetch_url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml', home_url: 'https://theverge.com/ai-artificial-intelligence' },
   { name: 'VentureBeat',        slug: 'venturebeat',      category: 'app',    fetch_type: 'rss',     fetch_url: 'https://venturebeat.com/feed/', home_url: 'https://venturebeat.com/ai/' },
   { name: 'MIT Tech Review',    slug: 'mit-tech-review',  category: 'app',    fetch_type: 'rss',     fetch_url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed', home_url: 'https://www.technologyreview.com/topic/artificial-intelligence/' },
-  { name: 'Reddit r/artificial',slug: 'reddit-ai',        category: 'app',    fetch_type: 'api',     fetch_url: 'https://www.reddit.com/r/artificial/hot.json?limit=20', home_url: 'https://www.reddit.com/r/artificial/' },
+  { name: 'AI News',            slug: 'ainews',           category: 'app',    fetch_type: 'rss',     fetch_url: 'https://www.artificialintelligence-news.com/feed/', home_url: 'https://www.artificialintelligence-news.com/' },
   { name: 'AI Business',        slug: 'aibusiness',       category: 'app',    fetch_type: 'rss',     fetch_url: 'https://aibusiness.com/rss.xml', home_url: 'https://aibusiness.com/' },
   { name: 'Ars Technica',       slug: 'arstechnica',      category: 'app',    fetch_type: 'rss',     fetch_url: 'https://feeds.arstechnica.com/arstechnica/index', home_url: 'https://arstechnica.com/' },
   { name: 'AI Today',           slug: 'aitoday',          category: 'app',    fetch_type: 'scraper', fetch_url: 'https://www.aitoday.io/', home_url: 'https://www.aitoday.io/' },
@@ -36,7 +36,7 @@ const sources = [
   { name: 'Boxes and Arrows',    slug: 'boxes-arrows',     category: 'uxui',   fetch_type: 'rss', fetch_url: 'https://boxesandarrows.com/feed/',               home_url: 'https://boxesandarrows.com/' },
   { name: 'UX Magazine',         slug: 'ux-mag',           category: 'uxui',   fetch_type: 'rss', fetch_url: 'https://uxmag.com/feed',                         home_url: 'https://uxmag.com/' },
   { name: 'UX Matters',          slug: 'ux-matters',       category: 'uxui',   fetch_type: 'rss', fetch_url: 'https://www.uxmatters.com/index.xml',            home_url: 'https://www.uxmatters.com/' },
-  { name: 'Bootcamp',            slug: 'bootcamp-ux',      category: 'uxui',   fetch_type: 'rss', fetch_url: 'https://bootcamp.uxdesign.cc/feed',              home_url: 'https://bootcamp.uxdesign.cc/' },
+  { name: 'UX Design Weekly',    slug: 'uxdesignweekly',   category: 'uxui',   fetch_type: 'rss', fetch_url: 'https://uxdesignweekly.com/feed/',               home_url: 'https://uxdesignweekly.com/' },
 
   // TECH (10 sources) — research, code, frameworks for developers
   { name: 'GitHub Trending',    slug: 'github-trending',  category: 'tech',   fetch_type: 'scraper', fetch_url: 'https://github.com/trending/python?since=daily', home_url: 'https://github.com/trending/python?since=daily' },
@@ -46,7 +46,7 @@ const sources = [
   { name: 'OpenAI Blog',        slug: 'openai',           category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://openai.com/blog/rss.xml', home_url: 'https://openai.com/blog/' },
   { name: 'Google AI Dev',      slug: 'google-ai-dev',    category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://developers.googleblog.com/feeds/posts/default', home_url: 'https://ai.google.dev/' },
   { name: 'LangChain Blog',     slug: 'langchain',        category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://blog.langchain.dev/rss/', home_url: 'https://www.langchain.com/' },
-  { name: 'Papers with Code',   slug: 'paperswithcode',   category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://paperswithcode.com/rss.xml', home_url: 'https://paperswithcode.com/' },
+  { name: 'The Gradient',       slug: 'thegradient',      category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://thegradient.pub/rss/', home_url: 'https://thegradient.pub/' },
   { name: 'Towards Data Science',slug: 'towardsdatascience', category: 'tech', fetch_type: 'rss',    fetch_url: 'https://towardsdatascience.com/feed', home_url: 'https://towardsdatascience.com/' },
   { name: 'DeepMind Blog',      slug: 'deepmind',         category: 'tech',   fetch_type: 'rss',     fetch_url: 'https://deepmind.google/blog/rss.xml', home_url: 'https://deepmind.google/blog/' },
 ]

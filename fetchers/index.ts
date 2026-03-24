@@ -42,7 +42,7 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   // APP
   'techcrunch-ai':  () => new RssFetcher('https://techcrunch.com/category/artificial-intelligence/feed/').fetch(),
   'verge-ai':       () => new RssFetcher('https://www.theverge.com/rss/ai-artificial-intelligence/index.xml').fetch(),
-  'reddit-ai':      () => new RedditFetcher('artificial').fetch(),
+  'ainews':         () => new RssFetcher('https://www.artificialintelligence-news.com/feed/').fetch(),
   'mit-tech-review':() => new RssFetcher('https://www.technologyreview.com/topic/artificial-intelligence/feed').fetch(),
   'venturebeat':    () => new RssFetcher('https://venturebeat.com/feed/').fetch(),
   'aibusiness':     () => new RssFetcher('https://aibusiness.com/rss.xml').fetch(),
@@ -118,7 +118,7 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   'boxes-arrows':   () => new RssFetcher('https://boxesandarrows.com/feed/').fetch(),
   'ux-mag':         () => new RssFetcher('https://uxmag.com/feed').fetch(),
   'ux-matters':     () => new RssFetcher('https://www.uxmatters.com/index.xml').fetch(),
-  'bootcamp-ux':    () => new RssFetcher('https://bootcamp.uxdesign.cc/feed').fetch(),
+  'uxdesignweekly': () => new RssFetcher('https://uxdesignweekly.com/feed/').fetch(),
 
   // UXUI - Scraper (legacy)
   'lapa-ninja':     () => new GenericScraper('https://www.lapa.ninja/category/artificial-intelligence/', {
@@ -197,7 +197,7 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   'openai':         () => new RssFetcher('https://openai.com/blog/rss.xml').fetch(),
   'google-ai-dev':  () => new RssFetcher('https://developers.googleblog.com/feeds/posts/default').fetch(),
   'langchain':      () => new RssFetcher('https://blog.langchain.dev/rss/').fetch(),
-  'paperswithcode': () => new RssFetcher('https://paperswithcode.com/rss.xml').fetch(),
+  'thegradient':    () => new RssFetcher('https://thegradient.pub/rss/').fetch(),
   'towardsdatascience': () => new RssFetcher('https://towardsdatascience.com/feed').fetch(),
   'modelzoo':       () => new GenericScraper('https://modelzoo.co/', {
     listSelector: '.model-card, article',
