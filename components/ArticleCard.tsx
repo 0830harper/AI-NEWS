@@ -15,6 +15,20 @@ const CATEGORY_LABELS: Record<string, string> = {
   tech: 'Tech',
 }
 
+const DESC_LIMIT = 100
+
+/** Keep only complete sentences that fit within DESC_LIMIT characters. */
+function trimDesc(text: string): string {
+  const sentences = text.match(/[^.!?]+[.!?]*/g) ?? [text]
+  let result = ''
+  for (const s of sentences) {
+    const next = result ? result + ' ' + s.trim() : s.trim()
+    if (next.length > DESC_LIMIT) break
+    result = next
+  }
+  return result || text.slice(0, DESC_LIMIT)
+}
+
 export default function ArticleCard({ article, showCategory = false }: Props) {
   const [imgReady, setImgReady] = useState(false)
   const sourceName = article.sources?.name || 'Unknown'
@@ -60,8 +74,8 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
               {article.title}
             </h2>
             {article.description && (
-              <p className="text-sm text-gray-500 leading-relaxed mb-1.5 line-clamp-2">
-                {article.description}
+              <p className="text-sm text-gray-500 leading-relaxed mb-1.5">
+                {trimDesc(article.description)}
               </p>
             )}
             <div className="flex items-center justify-between">
@@ -90,8 +104,8 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             {article.title}
           </h2>
           {article.description && (
-            <p className="text-sm font-medium text-white/90 leading-relaxed mt-2 line-clamp-2">
-              {article.description}
+            <p className="text-sm font-medium text-white/90 leading-relaxed mt-2">
+              {trimDesc(article.description)}
             </p>
           )}
           <div className="flex items-center justify-between mt-3">
