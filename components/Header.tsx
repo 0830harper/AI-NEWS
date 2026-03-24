@@ -4,11 +4,11 @@ import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 
 const categories = [
-  { slug: '',        label: 'Pick',   icon: '/icons/pick.svg'   },
-  { slug: 'app',    label: 'Tool',   icon: '/icons/tool.svg'   },
-  { slug: 'design', label: 'Visual', icon: '/icons/visual.svg' },
-  { slug: 'uxui',   label: 'UX / UI',icon: '/icons/uxui.svg'   },
-  { slug: 'tech',   label: 'Tech',   icon: '/icons/tech.svg'   },
+  { slug: '',        label: 'Pick',   icon: '/icons/pick.svg',   size: 34 },
+  { slug: 'app',    label: 'Tool',   icon: '/icons/tool.svg',   size: 36 },
+  { slug: 'design', label: 'Visual', icon: '/icons/visual.svg', size: 36 },
+  { slug: 'uxui',   label: 'UX / UI',icon: '/icons/uxui.svg',   size: 38 },
+  { slug: 'tech',   label: 'Tech',   icon: '/icons/tech.svg',   size: 38 },
 ]
 
 export default function Header() {
@@ -34,8 +34,8 @@ export default function Header() {
               <Image
                 src={cat.icon}
                 alt={cat.label}
-                width={36}
-                height={36}
+                width={cat.size}
+                height={cat.size}
                 className="shrink-0 transition-transform duration-150 group-hover:scale-125"
               />
               {cat.label}
