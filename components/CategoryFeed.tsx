@@ -69,15 +69,15 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
           <button
             onClick={() => fetchPage(page + 1)}
             disabled={loading}
-            className="px-8 py-2.5 bg-gray-900 text-white text-sm tracking-wide hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="transition-transform duration-150 hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? (
-              <span className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 border border-white border-t-transparent rounded-full animate-spin" />
+              <span className="flex items-center gap-2 px-8 py-2.5 text-sm text-gray-500">
+                <span className="w-3.5 h-3.5 border border-gray-400 border-t-transparent rounded-full animate-spin" />
                 Loading...
               </span>
             ) : (
-              'Load More'
+              <img src="/icons/load-more.svg" alt="Load More" width={200} height={62} />
             )}
           </button>
         </div>
