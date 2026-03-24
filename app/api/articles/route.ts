@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
 
-const MAX_PER_SOURCE = 8
+const MAX_PER_SOURCE = 5
 
 // Filter out articles whose titles are mostly '?' (encoding failure)
 function hasGarbageTitle(article: any): boolean {
