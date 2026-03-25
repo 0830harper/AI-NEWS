@@ -19,7 +19,9 @@ const CATEGORY_LABELS: Record<string, string> = {
 const DESC_LIMIT = 100
 
 /** Keep only complete sentences that fit within DESC_LIMIT characters, add ellipsis if trimmed. */
-function trimDesc(text: string): string {
+function trimDesc(raw: string): string {
+  // Strip leading byline patterns like "Author Name • " or "Author Name | "
+  const text = raw.replace(/^[^•|]{1,80}[•|]\s*/, '').trim() || raw.trim()
   const sentences = text.match(/[^.!?]+[.!?]*/g) ?? [text]
   let result = ''
   for (const s of sentences) {
