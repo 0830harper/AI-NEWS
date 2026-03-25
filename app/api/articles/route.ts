@@ -60,6 +60,11 @@ export async function GET(req: NextRequest) {
     query = query.in('source_id', sourceIds)
   }
 
+  // Pick 区只展示有 HN points 的文章
+  if (isLatest) {
+    query = query.gt('raw_score', 0)
+  }
+
   const { data, error } = await query
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
