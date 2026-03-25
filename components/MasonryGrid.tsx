@@ -6,18 +6,6 @@ interface Props {
   showCategory?: boolean
 }
 
-function interleave(articles: Article[]): Article[] {
-  const withImg = articles.filter((a) => !!a.thumbnail)
-  const noImg = articles.filter((a) => !a.thumbnail)
-  const result: Article[] = []
-  const max = Math.max(withImg.length, noImg.length)
-  for (let i = 0; i < max; i++) {
-    if (i < withImg.length) result.push(withImg[i])
-    if (i < noImg.length) result.push(noImg[i])
-  }
-  return result
-}
-
 export default function MasonryGrid({ articles, showCategory = false }: Props) {
   if (!articles.length) {
     return (
@@ -27,11 +15,9 @@ export default function MasonryGrid({ articles, showCategory = false }: Props) {
     )
   }
 
-  const sorted = interleave(articles)
-
   return (
-    <div className="columns-1 sm:columns-2 lg:columns-3 gap-8">
-      {sorted.map((article) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {articles.map((article) => (
         <ArticleCard key={article.id} article={article} showCategory={showCategory} />
       ))}
     </div>
