@@ -8,7 +8,7 @@ interface Props {
   showCategory?: boolean
 }
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 30
 
 export default function CategoryFeed({ category, showCategory = false }: Props) {
   const [articles, setArticles] = useState<Article[]>([])

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
 
+const MAX_PER_SOURCE_PICK = 10
 const MAX_PER_SOURCE = 5
 
 // Filter out articles whose titles are mostly '?' (encoding failure)
@@ -76,7 +77,7 @@ export async function GET(req: NextRequest) {
       title: (a.title || '').replace(/\?{2,}/g, '').replace(/^\?+/, '').trim()
     }))
     .filter((a: any) => !hasGarbageTitle(a))
-  const diversified = diversify(cleaned, MAX_PER_SOURCE).slice(0, limit)
+  const diversified = diversify(cleaned, isLatest ? MAX_PER_SOURCE_PICK : MAX_PER_SOURCE).slice(0, limit)
 
   return NextResponse.json({ articles: diversified, page, limit })
 }
