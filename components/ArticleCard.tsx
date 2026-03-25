@@ -28,6 +28,8 @@ function trimDesc(raw: string): string {
   if (stripped !== collapsed && stripped.length < 20) return ''
   const text = stripped.length >= 20 ? stripped : collapsed
   if (text.length < 20) return ''
+  // Hide descriptions that are just IDs / reference codes (e.g. "arXiv:2603.12345")
+  if (/^[a-zA-Z]+:\d/.test(text)) return ''
 
   const sentences = text.match(/[^.!?]+[.!?]*/g) ?? [text]
   let result = ''
