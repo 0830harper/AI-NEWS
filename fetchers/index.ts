@@ -11,8 +11,38 @@ import { HuggingFaceFetcher } from './scraper/huggingface'
 import { GenericScraper } from './scraper/generic'
 import { FetchedArticle } from '../types'
 
-// 并发限制：每批同时抓取 N 张图
+// 并发限制
 const OG_CONCURRENCY = 5
+const HN_CONCURRENCY = 5
+const HN_TIMEOUT_MS = 4000
+
+/** 用 HN Algolia 反查每篇文章的 points，作为 raw_score */
+async function enrichWithHnPoints(articles: FetchedArticle[]): Promise<void> {
+  for (let i = 0; i < articles.length; i += HN_CONCURRENCY) {
+    const batch = articles.slice(i, i + HN_CONCURRENCY)
+    await Promise.allSettled(batch.map(async (article) => {
+      if (!article.url) return
+      try {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), HN_TIMEOUT_MS)
+        const encoded = encodeURIComponent(article.url)
+        const res = await fetch(
+          `https://hn.algolia.com/api/v1/search?query=${encoded}&restrictSearchableAttributes=url&hitsPerPage=1`,
+          { signal: controller.signal }
+        )
+        clearTimeout(timer)
+        if (!res.ok) return
+        const data = await res.json()
+        const hit = data?.hits?.[0]
+        if (hit && typeof hit.points === 'number' && hit.points > 0) {
+          article.raw_score = Math.max(article.raw_score ?? 0, hit.points)
+        }
+      } catch {
+        // 查不到或超时，跳过
+      }
+    }))
+  }
+}
 
 async function enrichWithOgImages(articles: FetchedArticle[]): Promise<void> {
   const noImage = articles.filter((a) => !a.thumbnail && a.url)
@@ -301,6 +331,9 @@ export async function fetchAll() {
 
       // 补充 og:image（对没有缩略图的文章）
       await enrichWithOgImages(articles)
+
+      // 用 HN Algolia 反查 points 作为热度
+      await enrichWithHnPoints(articles)
 
       // 写入数据库
       for (const article of articles) {
