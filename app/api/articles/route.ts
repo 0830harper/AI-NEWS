@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
 
   const isLatest = category === 'latest'
   // 全部用90天窗口，按发布时间倒序
-  const cutoff = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString()
+  const cutoff = new Date(Date.now() - (isLatest ? 30 : 90) * 24 * 3600 * 1000).toISOString()
 
   // For category filtering, first get matching source IDs
   let sourceIds: number[] | null = null
@@ -109,7 +109,7 @@ export async function GET(req: NextRequest) {
     .filter((a: any) => !hasGarbageTitle(a))
 
   const result = isLatest
-    ? weightedSort(cleaned, 5, limit)
+    ? weightedSort(cleaned, 10, limit)
     : diversify(cleaned, MAX_PER_SOURCE).slice(0, limit)
 
   return NextResponse.json({ articles: result, page, limit })
