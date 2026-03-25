@@ -25,7 +25,8 @@ function diversify(articles: any[], maxPerSource: number): any[] {
 }
 
 /** Normalize each article's score to 0–100 within its source,
- *  then sort all articles by that weighted score descending.
+ *  apply exponential time decay (half-life = 7 days),
+ *  then sort all articles by final score descending.
  *  Trims the result to a full multiple of COLS so the last row is always complete. */
 function weightedSort(articles: any[], maxPerSource: number, limit: number): any[] {
   // Find max raw_score per source
@@ -33,15 +34,21 @@ function weightedSort(articles: any[], maxPerSource: number, limit: number): any
   for (const a of articles) {
     sourceMax[a.source_id] = Math.max(sourceMax[a.source_id] ?? 0, a.raw_score ?? 0)
   }
-  // Attach weighted_score (0–100) and cap per source
+  const now = Date.now()
+  // Attach weighted_score = normalised(0–100) × time_decay, cap per source
   const sourceCount: Record<number, number> = {}
   const scored = articles
-    .map(a => ({
-      ...a,
-      weighted_score: sourceMax[a.source_id] > 0
-        ? Math.round((a.raw_score / sourceMax[a.source_id]) * 100)
-        : 0,
-    }))
+    .map(a => {
+      const normalised = sourceMax[a.source_id] > 0
+        ? (a.raw_score / sourceMax[a.source_id]) * 100
+        : 0
+      const ageDays = (now - new Date(a.published_at).getTime()) / 86_400_000
+      const timeFactor = Math.pow(0.5, ageDays / 7) // half-life 7 days
+      return {
+        ...a,
+        weighted_score: Math.round(normalised * timeFactor),
+      }
+    })
     .filter(a => {
       sourceCount[a.source_id] = (sourceCount[a.source_id] ?? 0) + 1
       return sourceCount[a.source_id] <= maxPerSource
