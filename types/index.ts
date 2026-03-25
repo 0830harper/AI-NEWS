@@ -11,6 +11,7 @@ export interface Article {
   fetched_at: string
   raw_score: number
   heat_score: number
+  weighted_score?: number
   click_count: number
   card_color: string
   tags: string[]
