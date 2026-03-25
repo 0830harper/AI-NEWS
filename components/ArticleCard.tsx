@@ -20,8 +20,14 @@ const DESC_LIMIT = 100
 
 /** Keep only complete sentences that fit within DESC_LIMIT characters, add ellipsis if trimmed. */
 function trimDesc(raw: string): string {
-  // Strip leading byline patterns like "Author Name • " or "Author Name | "
-  const text = raw.replace(/^[^•|]{1,80}[•|]\s*/, '').trim() || raw.trim()
+  // Collapse all whitespace (newlines, tabs, multiple spaces) into single space
+  const collapsed = raw.replace(/\s+/g, ' ').trim()
+  // Strip leading byline: "Author Name • " or "Author Name | "
+  const stripped = collapsed.replace(/^[^•|]{1,80}[•|]\s*/, '').trim()
+  // If what remains is just a date or too short to be real content, bail out
+  const text = stripped.length >= 20 ? stripped : collapsed
+  if (text.length < 20) return ''
+
   const sentences = text.match(/[^.!?]+[.!?]*/g) ?? [text]
   let result = ''
   for (const s of sentences) {
