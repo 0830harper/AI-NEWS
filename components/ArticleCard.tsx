@@ -24,7 +24,8 @@ function trimDesc(raw: string): string {
   const collapsed = raw.replace(/\s+/g, ' ').trim()
   // Strip leading byline: "Author Name • " or "Author Name | "
   const stripped = collapsed.replace(/^[^•|]{1,80}[•|]\s*/, '').trim()
-  // If what remains is just a date or too short to be real content, bail out
+  // If byline was stripped and nothing useful remains, hide entirely
+  if (stripped !== collapsed && stripped.length < 20) return ''
   const text = stripped.length >= 20 ? stripped : collapsed
   if (text.length < 20) return ''
 
