@@ -44,6 +44,40 @@ async function enrichWithHnPoints(articles: FetchedArticle[]): Promise<void> {
   }
 }
 
+/** Insert or update an article, preserving published_at for existing rows.
+ *  This prevents re-fetches from overwriting the original publication date
+ *  with new Date() (which happens when the RSS feed has no pubDate). */
+async function saveArticle(sourceId: number, article: FetchedArticle, heatScore: number) {
+  const urlHash = hashUrl(article.url)
+  const payload = {
+    source_id: sourceId,
+    title: article.title.slice(0, 500),
+    description: article.description?.slice(0, 1000) || null,
+    url: article.url,
+    url_hash: urlHash,
+    author: article.author || null,
+    thumbnail: article.thumbnail || null,
+    raw_score: article.raw_score,
+    heat_score: heatScore,
+    card_color: randomColor(),
+    tags: article.tags,
+  }
+  const { data: existing } = await supabaseAdmin
+    .from('articles')
+    .select('id')
+    .eq('url_hash', urlHash)
+    .maybeSingle()
+
+  if (existing) {
+    await supabaseAdmin.from('articles').update(payload).eq('url_hash', urlHash)
+  } else {
+    await supabaseAdmin.from('articles').insert({
+      ...payload,
+      published_at: article.published_at.toISOString(),
+    })
+  }
+}
+
 async function enrichWithOgImages(articles: FetchedArticle[]): Promise<void> {
   const noImage = articles.filter((a) => !a.thumbnail && a.url)
   for (let i = 0; i < noImage.length; i += OG_CONCURRENCY) {
@@ -272,26 +306,8 @@ export async function fetchByCategory(category: string) {
 
       for (const article of articles) {
         if (!article.url || !article.title) continue
-        const urlHash = hashUrl(article.url)
         const heatScore = calcHeatScore(article.raw_score, article.published_at)
-
-        await supabaseAdmin.from('articles').upsert(
-          {
-            source_id: source.id,
-            title: article.title.slice(0, 500),
-            description: article.description?.slice(0, 1000) || null,
-            url: article.url,
-            url_hash: urlHash,
-            author: article.author || null,
-            thumbnail: article.thumbnail || null,
-            published_at: article.published_at.toISOString(),
-            raw_score: article.raw_score,
-            heat_score: heatScore,
-            card_color: randomColor(),
-            tags: article.tags,
-          },
-          { onConflict: 'url_hash', ignoreDuplicates: false }
-        )
+        await saveArticle(source.id, article, heatScore)
       }
 
       await supabaseAdmin
@@ -343,26 +359,8 @@ export async function fetchAll() {
       // 写入数据库
       for (const article of articles) {
         if (!article.url || !article.title) continue
-        const urlHash = hashUrl(article.url)
         const heatScore = calcHeatScore(article.raw_score, article.published_at)
-
-        await supabaseAdmin.from('articles').upsert(
-          {
-            source_id: source.id,
-            title: article.title.slice(0, 500),
-            description: article.description?.slice(0, 1000) || null,
-            url: article.url,
-            url_hash: urlHash,
-            author: article.author || null,
-            thumbnail: article.thumbnail || null,
-            published_at: article.published_at.toISOString(),
-            raw_score: article.raw_score,
-            heat_score: heatScore,
-            card_color: randomColor(),
-            tags: article.tags,
-          },
-          { onConflict: 'url_hash', ignoreDuplicates: false }
-        )
+        await saveArticle(source.id, article, heatScore)
       }
 
       // 更新来源状态
