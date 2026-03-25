@@ -83,9 +83,6 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             )}
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-gray-400 flex items-center gap-2">
-                {article.heat_score > 5 && (
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 align-middle" />
-                )}
                 {sourceName}
                 {showCategory && categoryLabel && (
                   <span className="px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-500">
@@ -93,7 +90,12 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
                   </span>
                 )}
               </span>
-              <span className="text-sm text-gray-300">{sourceDate}</span>
+              <span className="flex items-center gap-2">
+                {article.raw_score > 0 && (
+                  <span className="text-xs font-bold text-orange-400">▲ {article.raw_score} pts</span>
+                )}
+                <span className="text-sm text-gray-300">{sourceDate}</span>
+              </span>
             </div>
           </div>
         </>
@@ -113,9 +115,6 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
           )}
           <div className="flex items-center justify-between mt-3">
             <span className={`text-sm font-bold flex items-center gap-2 ${lightBg ? 'text-gray-500' : 'text-white/80'}`}>
-              {article.heat_score > 5 && (
-                <span className={`inline-block w-1.5 h-1.5 rounded-full align-middle ${lightBg ? 'bg-gray-600' : 'bg-white'}`} />
-              )}
               {sourceName}
               {showCategory && categoryLabel && (
                 <span className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${lightBg ? 'bg-black/10 text-gray-500' : 'bg-white/20 text-white'}`}>
@@ -123,7 +122,12 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
                 </span>
               )}
             </span>
-            <span className={`text-sm font-medium ${lightBg ? 'text-gray-400' : 'text-white/60'}`}>{sourceDate}</span>
+            <span className="flex items-center gap-2">
+              {article.raw_score > 0 && (
+                <span className={`text-xs font-bold ${lightBg ? 'text-orange-500' : 'text-orange-300'}`}>▲ {article.raw_score} pts</span>
+              )}
+              <span className={`text-sm font-medium ${lightBg ? 'text-gray-400' : 'text-white/60'}`}>{sourceDate}</span>
+            </span>
           </div>
         </div>
       )}
