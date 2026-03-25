@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     .from('articles')
     .select('*, sources(name, slug, category, home_url)')
     .gte('published_at', cutoff)
-    .order('published_at', { ascending: false })
+    .order(isLatest ? 'raw_score' : 'published_at', { ascending: false })
     .range(offset, offset + windowSize - 1)
 
   if (sourceIds !== null) {
