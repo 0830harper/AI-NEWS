@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
 
-const MAX_PER_SOURCE_PICK = 10
 const MAX_PER_SOURCE = 5
+const COLS = 3
 
 // Filter out articles whose titles are mostly '?' (encoding failure)
 function hasGarbageTitle(article: any): boolean {
@@ -22,6 +22,30 @@ function diversify(articles: any[], maxPerSource: number): any[] {
     }
   }
   return result
+}
+
+/** Round-robin interleave by source: take rank-1 from each source, then rank-2, …
+ *  Sources ordered by their top article's score so the best sources appear first. */
+function roundRobin(articles: any[], maxPerSource: number, limit: number): any[] {
+  // Group by source, preserving score-desc order within each group
+  const sourceMap = new Map<number, any[]>()
+  for (const a of articles) {
+    if (!sourceMap.has(a.source_id)) sourceMap.set(a.source_id, [])
+    sourceMap.get(a.source_id)!.push(a)
+  }
+  // Order sources by their best article's score
+  const sources = [...sourceMap.values()].sort(
+    (a, b) => (b[0]?.raw_score ?? 0) - (a[0]?.raw_score ?? 0)
+  )
+  const result: any[] = []
+  for (let round = 0; round < maxPerSource && result.length < limit; round++) {
+    for (const src of sources) {
+      if (round < src.length) result.push(src[round])
+      if (result.length >= limit) break
+    }
+  }
+  // Trim to complete rows so the last row is always full
+  return result.slice(0, Math.floor(result.length / COLS) * COLS)
 }
 
 export async function GET(req: NextRequest) {
@@ -55,7 +79,10 @@ export async function GET(req: NextRequest) {
     .select('*, sources(name, slug, category, home_url)')
     .gte('published_at', cutoff)
     .order(isLatest ? 'raw_score' : 'published_at', { ascending: false })
-    .range(offset, offset + windowSize - 1)
+
+  if (!isLatest) {
+    query = query.range(offset, offset + windowSize - 1)
+  }
 
   if (sourceIds !== null) {
     query = query.in('source_id', sourceIds)
@@ -63,7 +90,7 @@ export async function GET(req: NextRequest) {
 
   // Pick 区只展示有 HN points 的文章
   if (isLatest) {
-    query = query.gt('raw_score', 0)
+    query = query.gt('raw_score', 0).range(offset, offset + windowSize * 4 - 1)
   }
 
   const { data, error } = await query
@@ -73,11 +100,13 @@ export async function GET(req: NextRequest) {
   const cleaned = (data || [])
     .map((a: any) => ({
       ...a,
-      // Strip leading '?' and clusters of 2+ '?' from titles (encoding failures)
       title: (a.title || '').replace(/\?{2,}/g, '').replace(/^\?+/, '').trim()
     }))
     .filter((a: any) => !hasGarbageTitle(a))
-  const diversified = diversify(cleaned, isLatest ? MAX_PER_SOURCE_PICK : MAX_PER_SOURCE).slice(0, limit)
 
-  return NextResponse.json({ articles: diversified, page, limit })
+  const result = isLatest
+    ? roundRobin(cleaned, 5, limit)
+    : diversify(cleaned, MAX_PER_SOURCE).slice(0, limit)
+
+  return NextResponse.json({ articles: result, page, limit })
 }
