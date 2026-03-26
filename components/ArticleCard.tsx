@@ -103,9 +103,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
               </span>
               <span className="flex items-center gap-2">
                 {(article.weighted_score ?? 0) > 0 && (
-                  <span className="text-xs font-bold text-orange-400">
-                    ▲ {article.weighted_score} pts
-                  </span>
+                  <span className="text-base">🔥</span>
                 )}
                 <span className="text-sm text-gray-300">{sourceDate}</span>
               </span>
@@ -137,9 +135,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             </span>
             <span className="flex items-center gap-2">
               {(article.weighted_score ?? 0) > 0 && (
-                <span className={`text-xs font-bold ${lightBg ? 'text-orange-500' : 'text-orange-300'}`}>
-                  ▲ {article.weighted_score} pts
-                </span>
+                <span className="text-base">🔥</span>
               )}
               <span className={`text-sm font-medium ${lightBg ? 'text-gray-400' : 'text-white/60'}`}>{sourceDate}</span>
             </span>
