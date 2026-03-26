@@ -15,6 +15,81 @@ import { FetchedArticle } from '../types'
 const OG_CONCURRENCY = 5
 const HN_CONCURRENCY = 5
 const HN_TIMEOUT_MS = 4000
+const AI_CONCURRENCY = 5
+const AI_TIMEOUT_MS = 8000
+
+const VALID_CATEGORIES = ['app', 'design', 'uxui', 'tech', 'irrelevant']
+
+/** Use SiliconFlow Qwen to classify an article.
+ *  Returns: 'app' | 'design' | 'uxui' | 'tech' | 'irrelevant' */
+async function classifyArticle(title: string, description?: string | null): Promise<string> {
+  const apiKey = process.env.SILICONFLOW_API_KEY
+  if (!apiKey) return 'keep' // no key = skip filtering
+
+  const text = [title, description].filter(Boolean).join('\n').slice(0, 400)
+
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS)
+    const res = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'Qwen/Qwen2.5-7B-Instruct',
+        messages: [{
+          role: 'user',
+          content: `Classify this article into exactly one category. Reply with ONLY the category name, nothing else.
+
+Categories:
+- app: AI tools, apps, products, startups, launches, SaaS, new releases
+- design: visual design, graphic design, CSS, typography, animation, branding, Figma, illustration
+- uxui: UX research, user experience, usability, accessibility, interaction design, prototyping
+- tech: AI/ML research, papers, models, APIs, open source frameworks, benchmarks, programming
+- irrelevant: not related to AI, design, or tech (politics, sports, entertainment, finance, etc.)
+
+Article: ${text}`,
+        }],
+        max_tokens: 10,
+        temperature: 0,
+      }),
+    })
+    clearTimeout(timer)
+    if (!res.ok) return 'keep'
+    const data = await res.json()
+    const reply = (data.choices?.[0]?.message?.content ?? '').trim().toLowerCase()
+    // exact match
+    if (VALID_CATEGORIES.includes(reply)) return reply
+    // fuzzy match
+    if (reply.includes('irrelevant')) return 'irrelevant'
+    if (reply.includes('ux') || reply.includes('usab')) return 'uxui'
+    if (reply.includes('design')) return 'design'
+    if (reply.includes('tech') || reply.includes('research') || reply.includes('paper')) return 'tech'
+    if (reply.includes('app') || reply.includes('tool') || reply.includes('product')) return 'app'
+    return 'keep' // unknown → keep
+  } catch {
+    return 'keep' // timeout or error → keep
+  }
+}
+
+/** Filter out irrelevant articles using AI classification (batch, concurrent). */
+async function filterIrrelevant(articles: FetchedArticle[]): Promise<FetchedArticle[]> {
+  const results: FetchedArticle[] = []
+  for (let i = 0; i < articles.length; i += AI_CONCURRENCY) {
+    const batch = articles.slice(i, i + AI_CONCURRENCY)
+    const labels = await Promise.all(
+      batch.map(a => classifyArticle(a.title, a.description))
+    )
+    batch.forEach((article, idx) => {
+      if (labels[idx] !== 'irrelevant') results.push(article)
+      else console.log(`  ✗ filtered (irrelevant): ${article.title.slice(0, 60)}`)
+    })
+  }
+  return results
+}
 
 /** 用 HN Algolia 反查每篇文章的 points，作为 raw_score */
 async function enrichWithHnPoints(articles: FetchedArticle[]): Promise<void> {
@@ -298,10 +373,13 @@ export async function fetchByCategory(category: string) {
       const articles = await fetcher()
 
       await enrichWithOgImages(articles)
-
       await enrichWithHnPoints(articles)
 
-      for (const article of articles) {
+      // AI 过滤：去掉与 AI/设计/科技无关的内容
+      const relevant = await filterIrrelevant(articles)
+      console.log(`  AI filter: ${articles.length} → ${relevant.length} kept`)
+
+      for (const article of relevant) {
         if (!article.url || !article.title) continue
         const heatScore = calcHeatScore(article.raw_score, article.published_at)
         await saveArticle(source.id, article, heatScore)
@@ -316,7 +394,7 @@ export async function fetchByCategory(category: string) {
         })
         .eq('id', source.id)
 
-      console.log(`✓ ${source.name}: ${articles.length} articles`)
+      console.log(`✓ ${source.name}: ${relevant.length}/${articles.length} articles saved`)
     } catch (err: any) {
       console.error(`✗ ${source.name}: ${err.message}`)
       await supabaseAdmin
