@@ -299,10 +299,7 @@ export async function fetchByCategory(category: string) {
 
       await enrichWithOgImages(articles)
 
-      // app / tech 分类才做 HN 反查（design / uxui 文章极少出现在 HN）
-      if (category === 'app' || category === 'tech') {
-        await enrichWithHnPoints(articles)
-      }
+      await enrichWithHnPoints(articles)
 
       for (const article of articles) {
         if (!article.url || !article.title) continue
