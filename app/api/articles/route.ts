@@ -69,8 +69,8 @@ export async function GET(req: NextRequest) {
   const offset = (page - 1) * windowSize
 
   const isLatest = category === 'latest'
-  // 全部用90天窗口，按发布时间倒序
-  const cutoff = new Date(Date.now() - (isLatest ? 30 : 90) * 24 * 3600 * 1000).toISOString()
+  // Pick 区限制 30 天；分类页无时间限制，可无限回溯
+  const pickCutoff = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString()
 
   // For category filtering, first get matching source IDs
   let sourceIds: number[] | null = null
@@ -88,8 +88,12 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from('articles')
     .select('*, sources(name, slug, category, home_url)')
-    .gte('published_at', cutoff)
     .order(isLatest ? 'raw_score' : 'published_at', { ascending: false })
+
+  // 只有 Pick 区才加时间过滤
+  if (isLatest) {
+    query = query.gte('published_at', pickCutoff)
+  }
 
   if (!isLatest) {
     query = query.range(offset, offset + windowSize - 1)
