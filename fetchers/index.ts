@@ -42,14 +42,16 @@ async function classifyArticle(title: string, description?: string | null): Prom
         model: 'Qwen/Qwen2.5-7B-Instruct',
         messages: [{
           role: 'user',
-          content: `Classify this article into exactly one category. Reply with ONLY the category name, nothing else.
+          content: `Classify this article. Reply with ONLY the category name, nothing else.
 
 Categories:
 - app: AI tools, apps, products, startups, launches, SaaS, new releases
 - design: visual design, graphic design, CSS, typography, animation, branding, Figma, illustration
 - uxui: UX research, user experience, usability, accessibility, interaction design, prototyping
 - tech: AI/ML research, papers, models, APIs, open source frameworks, benchmarks, programming
-- irrelevant: not related to AI, design, or tech (politics, sports, entertainment, finance, etc.)
+- irrelevant: ONLY use this if the article has absolutely nothing to do with AI, technology, or design (e.g. pure sports, cooking, weather, real estate unrelated to tech)
+
+Important: AI company news, AI industry trends, people at AI companies, AI policy, AI investment, AI music/art/creativity — these are ALL relevant. When in doubt, do NOT mark as irrelevant.
 
 Article: ${text}`,
         }],
