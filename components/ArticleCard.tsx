@@ -137,7 +137,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             </span>
             <span className="flex items-center gap-2">
               {(article.weighted_score ?? 0) > 0 && (
-                <span className="flex items-center gap-0.5 text-xs font-bold text-orange-400">
+                <span className={`flex items-center gap-0.5 text-xs font-bold ${lightBg ? 'text-orange-500' : 'text-white'}`}>
                   🔥 {article.weighted_score}
                 </span>
               )}
