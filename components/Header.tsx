@@ -20,7 +20,7 @@ export default function Header() {
       <Link href="/">
         <Image src="/icons/logo.svg" alt="AINEWS" width={178} height={47} priority />
       </Link>
-      <nav className="flex gap-1">
+      <nav className="flex gap-0.5 sm:gap-1">
         {categories.map((cat) => {
           const href = cat.slug ? `/${cat.slug}` : '/'
           const isActive = pathname === href
@@ -28,7 +28,7 @@ export default function Header() {
             <Link
               key={cat.slug}
               href={href}
-              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors
+              className={`group flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-sm transition-colors
                 ${isActive ? 'text-gray-900' : 'text-gray-400 hover:text-gray-700'}`}
             >
               <Image
@@ -38,7 +38,7 @@ export default function Header() {
                 height={cat.size}
                 className="shrink-0 transition-transform duration-150 group-hover:scale-125"
               />
-              {cat.label}
+              <span className="hidden sm:inline">{cat.label}</span>
             </Link>
           )
         })}
