@@ -22,12 +22,17 @@ const VALID_CATEGORIES = ['app', 'design', 'uxui', 'tech', 'irrelevant']
 
 // 关键词预检：包含这些词的文章直接保留，不需要 AI 判断
 const AI_KEYWORDS = [
+  // English AI terms
   'AI', 'A.I.', 'artificial intelligence', 'machine learning', 'deep learning',
   'neural network', 'LLM', 'GPT', 'ChatGPT', 'Claude', 'Gemini', 'OpenAI',
   'Anthropic', 'xAI', 'DeepMind', 'Mistral', 'Llama', 'diffusion', 'transformer',
-  'AGI', 'generative', 'large language', 'multimodal',
+  'AGI', 'generative', 'large language', 'multimodal', 'copilot', 'agent',
+  'robotics', 'autonomous', 'computer vision', 'NLP', 'stable diffusion',
+  // Chinese AI terms
   '人工智能', '大模型', '机器学习', '深度学习', '神经网络', '智能体', '具身',
-  'UX', 'UI', 'design', 'Figma', 'typography', 'CSS', 'frontend', 'interface',
+  '生成式', '多模态', '模型', '算法', '机器人', 'AI',
+  // AI design / UX tools
+  'Figma AI', 'AI design', 'AI tool', 'AI app', 'AI product',
 ]
 
 /** Fast keyword pre-check: if article contains AI/design keywords, skip AI classification */
@@ -61,11 +66,11 @@ async function classifyArticle(title: string, description?: string | null): Prom
         model: 'Qwen/Qwen2.5-7B-Instruct',
         messages: [{
           role: 'user',
-          content: `This article did NOT match common AI/design keywords. Decide if it is still relevant to AI, technology, or design.
+          content: `This is an AI NEWS website. Decide if this article is relevant to AI or AI-adjacent topics.
 Reply with ONLY "relevant" or "irrelevant".
 
-Examples of irrelevant: pure sports results, cooking recipes, weather forecasts, celebrity gossip with no tech angle, car reviews unrelated to AI/EV.
-Examples of relevant: tech company news, software tools, internet culture, digital products, programming, data, robotics.
+Relevant topics: AI models, AI tools, AI companies, AI research, AI policy/regulation, AI-generated content, robotics, autonomous systems, design tools powered by AI, UX for AI products, tech news about AI industry.
+Irrelevant: sports, cooking, weather, celebrity gossip, traditional car news, real estate, finance unrelated to AI, politics unrelated to AI, general consumer products with no AI angle.
 
 Article: ${text}`,
         }],
