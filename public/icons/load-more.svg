@@ -1,30 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="260" height="80" viewBox="0 0 260 80" fill="none">
- <defs>
- <filter id="sticker" x="-8%" y="-25%" width="116%" height="150%">
- <feMorphology in="SourceAlpha" operator="dilate" radius="5" result="e"/>
- <feFlood flood-color="#ffffff" result="w"/>
- <feComposite in="w" in2="e" operator="in" result="wo"/>
- <feOffset dx="4" dy="5" in="e" result="so"/>
- <feFlood flood-color="#bebebe" result="sc"/>
- <feComposite in="sc" in2="so" operator="in" result="s"/>
- <feMerge>
- <feMergeNode in="s"/>
- <feMergeNode in="wo"/>
- <feMergeNode in="SourceGraphic"/>
- </feMerge>
- </filter>
- </defs>
- <g filter="url(#sticker)">
- <path d="M20 8 C40 4 80 2 130 4 C180 2 220 4 242 8 C250 14 252 24 250 38 C252 52 248 62 240 68 C218 74 180 76 130 74 C80 76 42 74 20 68 C10 62 6 52 8 38 C6 24 10 14 20 8 Z"
- fill="#1a1a1a" transform="translate(3,3)"/>
- <path d="M20 8 C40 4 80 2 130 4 C180 2 220 4 242 8 C250 14 252 24 250 38 C252 52 248 62 240 68 C218 74 180 76 130 74 C80 76 42 74 20 68 C10 62 6 52 8 38 C6 24 10 14 20 8 Z"
- fill="#ffffff" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
- <text x="118" y="46" text-anchor="middle"
- font-family="'Arial Black', 'Helvetica Neue', sans-serif"
- font-size="24" font-weight="900"
- fill="#1a1a1a" letter-spacing="2">LOAD MORE</text>
- <path d="M210 34 L210 46 M204 40 L210 47 L216 40"
- fill="none" stroke="#1a1a1a" stroke-width="3"
- stroke-linecap="round" stroke-linejoin="round"/>
- </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="68" viewBox="0 0 320 84" fill="none">
+  <path d="M26 6 C58 2 96 0 148 2 C200 0 238 2 268 6 C280 12 284 23 282 38 C284 53 278 63 266 69 C236 74 198 76 148 74 C98 76 60 74 30 69 C18 63 12 53 14 38 C12 23 16 12 26 6Z"
+    fill="#c8c8c8" stroke="#c8c8c8" stroke-width="12" stroke-linejoin="round" transform="translate(4,5)"/>
+  <path d="M26 6 C58 2 96 0 148 2 C200 0 238 2 268 6 C280 12 284 23 282 38 C284 53 278 63 266 69 C236 74 198 76 148 74 C98 76 60 74 30 69 C18 63 12 53 14 38 C12 23 16 12 26 6Z"
+    fill="#fff" stroke="#fff" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M26 6 C58 2 96 0 148 2 C200 0 238 2 268 6 C280 12 284 23 282 38 C284 53 278 63 266 69 C236 74 198 76 148 74 C98 76 60 74 30 69 C18 63 12 53 14 38 C12 23 16 12 26 6Z"
+    fill="#fff" stroke="#1a1a1a" stroke-width="3.5" stroke-linejoin="round"/>
+  <text x="134" y="38" text-anchor="middle" dominant-baseline="central"
+    font-family="'Arial Black','Helvetica Neue',sans-serif"
+    font-size="22" font-weight="900" fill="#1a1a1a" letter-spacing="2">LOAD MORE</text>
+  <path d="M224 30 L224 44 M218 37 L224 44 L230 37"
+    fill="none" stroke="#1a1a1a" stroke-width="3.5"
+    stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
