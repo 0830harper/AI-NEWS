@@ -20,11 +20,30 @@ const AI_TIMEOUT_MS = 8000
 
 const VALID_CATEGORIES = ['app', 'design', 'uxui', 'tech', 'irrelevant']
 
+// 关键词预检：包含这些词的文章直接保留，不需要 AI 判断
+const AI_KEYWORDS = [
+  'AI', 'A.I.', 'artificial intelligence', 'machine learning', 'deep learning',
+  'neural network', 'LLM', 'GPT', 'ChatGPT', 'Claude', 'Gemini', 'OpenAI',
+  'Anthropic', 'xAI', 'DeepMind', 'Mistral', 'Llama', 'diffusion', 'transformer',
+  'AGI', 'generative', 'large language', 'multimodal',
+  '人工智能', '大模型', '机器学习', '深度学习', '神经网络', '智能体', '具身',
+  'UX', 'UI', 'design', 'Figma', 'typography', 'CSS', 'frontend', 'interface',
+]
+
+/** Fast keyword pre-check: if article contains AI/design keywords, skip AI classification */
+function hasRelevantKeyword(title: string, description?: string | null): boolean {
+  const text = [title, description].filter(Boolean).join(' ')
+  return AI_KEYWORDS.some(kw => text.toLowerCase().includes(kw.toLowerCase()))
+}
+
 /** Use SiliconFlow Qwen to classify an article.
  *  Returns: 'app' | 'design' | 'uxui' | 'tech' | 'irrelevant' */
 async function classifyArticle(title: string, description?: string | null): Promise<string> {
+  // Fast path: article clearly contains AI/design keywords → keep without calling API
+  if (hasRelevantKeyword(title, description)) return 'keep'
+
   const apiKey = process.env.SILICONFLOW_API_KEY
-  if (!apiKey) return 'keep' // no key = skip filtering
+  if (!apiKey) return 'keep'
 
   const text = [title, description].filter(Boolean).join('\n').slice(0, 400)
 
@@ -42,19 +61,11 @@ async function classifyArticle(title: string, description?: string | null): Prom
         model: 'Qwen/Qwen2.5-7B-Instruct',
         messages: [{
           role: 'user',
-          content: `Classify this article. Reply with ONLY the category name, nothing else.
+          content: `This article did NOT match common AI/design keywords. Decide if it is still relevant to AI, technology, or design.
+Reply with ONLY "relevant" or "irrelevant".
 
-Categories:
-- app: AI tools, apps, products, startups, launches, SaaS, new releases
-- design: visual design, graphic design, CSS, typography, animation, branding, Figma, illustration
-- uxui: UX research, user experience, usability, accessibility, interaction design, prototyping
-- tech: AI/ML research, papers, models, APIs, open source frameworks, benchmarks, programming
-- irrelevant: ONLY use this if the article has absolutely nothing to do with AI, technology, or design
-
-Rules:
-1. If the article contains ANY of these keywords, it is NEVER irrelevant: AI, 人工智能, 大模型, 机器学习, OpenAI, Claude, Gemini, GPT, LLM, xAI, 智能, 模型, 算法, 机器人, 具身, AGI, 深度学习, 神经网络, 科技, 创业, 融资
-2. Chinese AI industry news (company drama, personnel changes, funding, products) = relevant
-3. When in doubt, do NOT mark as irrelevant
+Examples of irrelevant: pure sports results, cooking recipes, weather forecasts, celebrity gossip with no tech angle, car reviews unrelated to AI/EV.
+Examples of relevant: tech company news, software tools, internet culture, digital products, programming, data, robotics.
 
 Article: ${text}`,
         }],
@@ -66,17 +77,10 @@ Article: ${text}`,
     if (!res.ok) return 'keep'
     const data = await res.json()
     const reply = (data.choices?.[0]?.message?.content ?? '').trim().toLowerCase()
-    // exact match
-    if (VALID_CATEGORIES.includes(reply)) return reply
-    // fuzzy match
     if (reply.includes('irrelevant')) return 'irrelevant'
-    if (reply.includes('ux') || reply.includes('usab')) return 'uxui'
-    if (reply.includes('design')) return 'design'
-    if (reply.includes('tech') || reply.includes('research') || reply.includes('paper')) return 'tech'
-    if (reply.includes('app') || reply.includes('tool') || reply.includes('product')) return 'app'
-    return 'keep' // unknown → keep
+    return 'keep'
   } catch {
-    return 'keep' // timeout or error → keep
+    return 'keep'
   }
 }
 
