@@ -49,9 +49,12 @@ Categories:
 - design: visual design, graphic design, CSS, typography, animation, branding, Figma, illustration
 - uxui: UX research, user experience, usability, accessibility, interaction design, prototyping
 - tech: AI/ML research, papers, models, APIs, open source frameworks, benchmarks, programming
-- irrelevant: ONLY use this if the article has absolutely nothing to do with AI, technology, or design (e.g. pure sports, cooking, weather, real estate unrelated to tech)
+- irrelevant: ONLY use this if the article has absolutely nothing to do with AI, technology, or design
 
-Important: AI company news, AI industry trends, people at AI companies, AI policy, AI investment, AI music/art/creativity — these are ALL relevant. When in doubt, do NOT mark as irrelevant.
+Rules:
+1. If the article contains ANY of these keywords, it is NEVER irrelevant: AI, 人工智能, 大模型, 机器学习, OpenAI, Claude, Gemini, GPT, LLM, xAI, 智能, 模型, 算法, 机器人, 具身, AGI, 深度学习, 神经网络, 科技, 创业, 融资
+2. Chinese AI industry news (company drama, personnel changes, funding, products) = relevant
+3. When in doubt, do NOT mark as irrelevant
 
 Article: ${text}`,
         }],
