@@ -6,6 +6,13 @@ if (!category) {
   process.exit(1)
 }
 
-console.log(`=== Fetching category: ${category} ===`)
-await fetchByCategory(category)
-console.log(`=== Done: ${category} ===`)
+async function main() {
+  console.log(`=== Fetching category: ${category} ===`)
+  await fetchByCategory(category)
+  console.log(`=== Done: ${category} ===`)
+}
+
+main().catch(err => {
+  console.error(err)
+  process.exit(1)
+})
