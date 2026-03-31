@@ -41,12 +41,21 @@ jobs:
           echo "cat=$CAT" >> $GITHUB_OUTPUT
           echo "Fetching category: $CAT"
 
-      - name: Write .env.local
+      - name: Write and verify .env.local
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
         run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env.local
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env.local
-          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> .env.local
-          echo "SILICONFLOW_API_KEY=${{ secrets.SILICONFLOW_API_KEY }}" >> .env.local
+          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$SUPABASE_URL" > .env.local
+          printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_ANON_KEY" >> .env.local
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$SUPABASE_SERVICE_ROLE_KEY" >> .env.local
+          printf 'SILICONFLOW_API_KEY=%s\n' "$SILICONFLOW_API_KEY" >> .env.local
+          echo "=== .env.local key lengths ==="
+          while IFS='=' read -r key value; do
+            echo "  $key: ${#value} chars"
+          done < .env.local
 
       - name: Run fetcher
         run: npx tsx --env-file=.env.local scripts/fetch-category.ts ${{ steps.pick.outputs.cat }}
