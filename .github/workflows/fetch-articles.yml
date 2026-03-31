@@ -41,20 +41,14 @@ jobs:
           echo "cat=$CAT" >> $GITHUB_OUTPUT
           echo "Fetching category: $CAT"
 
-      - name: Validate secrets
-        env:
-          CHECK_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          CHECK_URL: ${{ secrets.SUPABASE_URL }}
+      - name: Write .env.local
         run: |
-          if [ -z "$CHECK_URL" ]; then echo "ERROR: SUPABASE_URL is empty!"; exit 1; fi
-          if [ -z "$CHECK_KEY" ]; then echo "ERROR: SUPABASE_SERVICE_KEY is empty!"; exit 1; fi
-          echo "SUPABASE_URL length: ${#CHECK_URL}"
-          echo "SUPABASE_SERVICE_KEY length: ${#CHECK_KEY}"
+          cat > .env.local << 'ENVEOF'
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SILICONFLOW_API_KEY=${{ secrets.SILICONFLOW_API_KEY }}
+          ENVEOF
 
       - name: Run fetcher
-        run: npx tsx scripts/fetch-category.ts ${{ steps.pick.outputs.cat }}
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
+        run: npx tsx --env-file=.env.local scripts/fetch-category.ts ${{ steps.pick.outputs.cat }}
