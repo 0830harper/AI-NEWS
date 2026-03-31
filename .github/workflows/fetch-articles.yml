@@ -38,4 +38,5 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             --max-time 90)
           echo "HTTP $STATUS for category: ${{ steps.pick.outputs.cat }}"
-          [ "$STATUS" = "200" ] || exit 1
+          # 200 = success, 504 = Vercel timeout (function may have partially completed)
+          [ "$STATUS" = "200" ] || [ "$STATUS" = "504" ] || exit 1

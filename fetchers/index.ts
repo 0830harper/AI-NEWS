@@ -15,7 +15,7 @@ import { FetchedArticle } from '../types'
 const OG_CONCURRENCY = 5
 const HN_CONCURRENCY = 5
 const HN_TIMEOUT_MS = 4000
-const AI_CONCURRENCY = 5
+const AI_CONCURRENCY = 20
 const AI_TIMEOUT_MS = 8000
 
 const VALID_CATEGORIES = ['app', 'design', 'uxui', 'tech', 'irrelevant']
