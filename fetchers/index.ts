@@ -41,12 +41,9 @@ function hasRelevantKeyword(title: string, description?: string | null): boolean
   return AI_KEYWORDS.some(kw => text.toLowerCase().includes(kw.toLowerCase()))
 }
 
-/** Use SiliconFlow Qwen to classify an article.
+/** Use SiliconFlow Qwen to classify an article into a specific category.
  *  Returns: 'app' | 'design' | 'uxui' | 'tech' | 'irrelevant' */
 async function classifyArticle(title: string, description?: string | null): Promise<string> {
-  // Fast path: article clearly contains AI/design keywords → keep without calling API
-  if (hasRelevantKeyword(title, description)) return 'keep'
-
   const apiKey = process.env.SILICONFLOW_API_KEY
   if (!apiKey) return 'keep'
 
@@ -66,11 +63,16 @@ async function classifyArticle(title: string, description?: string | null): Prom
         model: 'Qwen/Qwen2.5-7B-Instruct',
         messages: [{
           role: 'user',
-          content: `This is an AI NEWS website. Decide if this article is relevant to AI or AI-adjacent topics.
-Reply with ONLY "relevant" or "irrelevant".
+          content: `You are classifying articles for an AI NEWS website. Assign this article to ONE category, or mark as irrelevant.
 
-Relevant topics: AI models, AI tools, AI companies, AI research, AI policy/regulation, AI-generated content, robotics, autonomous systems, design tools powered by AI, UX for AI products, tech news about AI industry.
-Irrelevant: sports, cooking, weather, celebrity gossip, traditional car news, real estate, finance unrelated to AI, politics unrelated to AI, general consumer products with no AI angle.
+Categories:
+- app: New AI tools, apps, product launches, AI workflows, automation tools, new websites/platforms, product use cases, AI application scenarios
+- design: AIGC visual cases, AI-generated art, AI artists, creative expression, generative art, visual creation, creative design tools
+- uxui: Product design, user experience, interface interaction, AI product UI cases, interaction design, design systems, usability research
+- tech: AI model capabilities, AI research papers, model releases, AI company news, AI engineering, development tools, technical breakthroughs, AI policy
+- irrelevant: sports, cooking, weather, celebrity gossip, traditional automotive, real estate, finance unrelated to AI, politics unrelated to AI
+
+Reply with ONLY one word: app, design, uxui, tech, or irrelevant.
 
 Article: ${text}`,
         }],
@@ -83,13 +85,17 @@ Article: ${text}`,
     const data = await res.json()
     const reply = (data.choices?.[0]?.message?.content ?? '').trim().toLowerCase()
     if (reply.includes('irrelevant')) return 'irrelevant'
+    if (reply.includes('app')) return 'app'
+    if (reply.includes('design')) return 'design'
+    if (reply.includes('uxui') || reply.includes('ux')) return 'uxui'
+    if (reply.includes('tech')) return 'tech'
     return 'keep'
   } catch {
     return 'keep'
   }
 }
 
-/** Filter out irrelevant articles using AI classification (batch, concurrent). */
+/** Filter irrelevant articles and assign AI category to each kept article. */
 async function filterIrrelevant(articles: FetchedArticle[]): Promise<FetchedArticle[]> {
   const results: FetchedArticle[] = []
   for (let i = 0; i < articles.length; i += AI_CONCURRENCY) {
@@ -98,8 +104,16 @@ async function filterIrrelevant(articles: FetchedArticle[]): Promise<FetchedArti
       batch.map(a => classifyArticle(a.title, a.description))
     )
     batch.forEach((article, idx) => {
-      if (labels[idx] !== 'irrelevant') results.push(article)
-      else console.log(`  ✗ filtered (irrelevant): ${article.title.slice(0, 60)}`)
+      const label = labels[idx]
+      if (label === 'irrelevant') {
+        console.log(`  ✗ filtered (irrelevant): ${article.title.slice(0, 60)}`)
+      } else {
+        // Attach AI-assigned category if specific (not just 'keep')
+        if (['app', 'design', 'uxui', 'tech'].includes(label)) {
+          article.ai_category = label
+        }
+        results.push(article)
+      }
     })
   }
   return results
@@ -150,6 +164,7 @@ async function saveArticle(sourceId: number, article: FetchedArticle, heatScore:
     heat_score: heatScore,
     card_color: randomColor(),
     tags: article.tags,
+    ai_category: article.ai_category || null,
   }
   const { data: existing } = await supabaseAdmin
     .from('articles')

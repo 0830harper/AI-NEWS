@@ -23,6 +23,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "docx": "^9.6.1",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"

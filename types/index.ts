@@ -48,4 +48,5 @@ export interface FetchedArticle {
   published_at: Date
   raw_score: number
   tags: string[]
+  ai_category?: string
 }

@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
   // Pick 区限制 30 天；分类页无时间限制，可无限回溯
   const pickCutoff = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString()
 
-  // For category filtering, first get matching source IDs
+  // For category filtering, get matching source IDs (for fallback)
   let sourceIds: number[] | null = null
   if (!isLatest) {
     const { data: sources } = await supabase
@@ -101,7 +101,8 @@ export async function GET(req: NextRequest) {
   }
 
   if (sourceIds !== null) {
-    query = query.in('source_id', sourceIds)
+    // Use ai_category if available, otherwise fall back to source category
+    query = query.or(`ai_category.eq.${category},and(ai_category.is.null,source_id.in.(${sourceIds.join(',')}))`)
   }
 
   // Pick 区只展示有 HN points 的文章
