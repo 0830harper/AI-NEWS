@@ -1,0 +1,41 @@
+name: Fetch Articles
+
+on:
+  schedule:
+    - cron: '0 16 * * *'   # App    → 北京时间 00:00
+    - cron: '0 22 * * *'   # Design → 北京时间 06:00
+    - cron: '0 4 * * *'    # UX/UI  → 北京时间 12:00
+    - cron: '0 10 * * *'   # Tech   → 北京时间 18:00
+  workflow_dispatch:
+    inputs:
+      category:
+        description: 'Category to fetch (app/design/uxui/tech)'
+        required: false
+        default: 'app'
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pick category by UTC hour
+        id: pick
+        run: |
+          HOUR=$(date -u +%-H)
+          case $HOUR in
+            16) CAT=app ;;
+            22) CAT=design ;;
+            4)  CAT=uxui ;;
+            10) CAT=tech ;;
+            *)  CAT="${{ github.event.inputs.category || 'app' }}" ;;
+          esac
+          echo "cat=$CAT" >> $GITHUB_OUTPUT
+          echo "Fetching category: $CAT"
+
+      - name: Trigger fetch endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://ai-news-swart-six.vercel.app/api/cron/${{ steps.pick.outputs.cat }}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --max-time 90)
+          echo "HTTP $STATUS for category: ${{ steps.pick.outputs.cat }}"
+          [ "$STATUS" = "200" ] || exit 1
