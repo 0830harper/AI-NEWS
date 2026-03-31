@@ -16,7 +16,17 @@ on:
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
       - name: Pick category by UTC hour
         id: pick
         run: |
@@ -31,12 +41,11 @@ jobs:
           echo "cat=$CAT" >> $GITHUB_OUTPUT
           echo "Fetching category: $CAT"
 
-      - name: Trigger fetch endpoint
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://ai-news-swart-six.vercel.app/api/cron/${{ steps.pick.outputs.cat }}" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            --max-time 90)
-          echo "HTTP $STATUS for category: ${{ steps.pick.outputs.cat }}"
-          # 200 = success, 504 = Vercel timeout (function may have partially completed)
-          [ "$STATUS" = "200" ] || [ "$STATUS" = "504" ] || exit 1
+      - name: Run fetcher
+        run: npx tsx scripts/fetch-category.ts ${{ steps.pick.outputs.cat }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
