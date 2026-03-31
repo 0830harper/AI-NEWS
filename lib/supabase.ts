@@ -1,13 +1,40 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Lazy initialization: clients are created on first property access,
+// not at module load time. This ensures env vars are available.
+let _admin: ReturnType<typeof createClient> | null = null
+let _client: ReturnType<typeof createClient> | null = null
 
-// 服务端/脚本用（service role key，有写权限）
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+function getAdmin() {
+  if (!_admin) {
+    _admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return _admin
+}
 
-// 前端用（anon key）— 懒加载，避免服务端脚本因缺少 ANON_KEY 崩溃
-export const supabase = createClient(
-  supabaseUrl,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? supabaseServiceKey
-)
+function getClient() {
+  if (!_client) {
+    _client = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+  return _client
+}
+
+export const supabaseAdmin = new Proxy({} as ReturnType<typeof createClient>, {
+  get(_, prop: string) {
+    const val = (getAdmin() as any)[prop]
+    return typeof val === 'function' ? val.bind(getAdmin()) : val
+  }
+})
+
+export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+  get(_, prop: string) {
+    const val = (getClient() as any)[prop]
+    return typeof val === 'function' ? val.bind(getClient()) : val
+  }
+})
