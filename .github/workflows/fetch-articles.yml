@@ -41,6 +41,16 @@ jobs:
           echo "cat=$CAT" >> $GITHUB_OUTPUT
           echo "Fetching category: $CAT"
 
+      - name: Validate secrets
+        env:
+          CHECK_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHECK_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          if [ -z "$CHECK_URL" ]; then echo "ERROR: SUPABASE_URL is empty!"; exit 1; fi
+          if [ -z "$CHECK_KEY" ]; then echo "ERROR: SUPABASE_SERVICE_KEY is empty!"; exit 1; fi
+          echo "SUPABASE_URL length: ${#CHECK_URL}"
+          echo "SUPABASE_SERVICE_KEY length: ${#CHECK_KEY}"
+
       - name: Run fetcher
         run: npx tsx scripts/fetch-category.ts ${{ steps.pick.outputs.cat }}
         env:
