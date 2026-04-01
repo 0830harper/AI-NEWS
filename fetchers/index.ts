@@ -86,8 +86,8 @@ async function classifyArticle(title: string, description?: string | null): Prom
 
 Categories:
 - app: A specific mobile app, web app, desktop app, browser extension, or AI tool that end-users can download/access and use directly. Must describe a concrete product with a name. Examples: "Slack adds AI features", "ChatGPT launches voice mode", "Figma releases new plugin", "Product Hunt top app of the day". NOT app: conferences, research, policy, security incidents, company strategy, enterprise B2B deals, government, education trends.
-- design: AIGC visual cases, AI-generated art, AI artists, creative expression, generative art, visual creation, creative design tools
-- uxui: Product design, user experience, interface interaction, AI product UI cases, interaction design, design systems, usability research
+- design: Visual/creative content: AI-generated art, generative art, AIGC cases, graphic design, brand identity, illustration, photography, architecture, physical product design, interior design, fashion. Anything visual or creative but NOT digital interface.
+- uxui: Digital interface design ONLY: UX research, UI patterns, interaction design, usability testing, wireframes, prototyping, design systems for software products, mobile/web app interface. NOT architecture, NOT physical products, NOT branding.
 - tech: AI model research, AI company news, AI policy, security, infrastructure, engineering, anything not about a specific usable product
 - irrelevant: sports, cooking, weather, celebrity gossip, traditional automotive, real estate, finance unrelated to AI, politics unrelated to AI
 
