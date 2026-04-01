@@ -6,12 +6,23 @@ const FETCH_TIMEOUT_MS = 15000
 
 const parser = new Parser({
   customFields: {
-    item: ['media:content', 'media:thumbnail', 'enclosure'],
+    item: ['media:content', 'media:thumbnail', 'enclosure', 'content:encoded'],
   },
   requestOptions: {
     timeout: FETCH_TIMEOUT_MS,
   },
 })
+
+/** Extract first <img src="..."> from HTML string (for Medium-style RSS feeds) */
+function extractImgFromHtml(html?: string): string | null {
+  if (!html) return null
+  const match = html.match(/<img[^>]+src=["']([^"']+)["']/i)
+  if (!match) return null
+  const src = match[1]
+  // Filter out tiny tracking pixels and base64
+  if (src.startsWith('data:') || src.length < 20) return null
+  return src
+}
 
 export class RssFetcher extends BaseFetcher {
   constructor(private feedUrl: string) {
@@ -25,6 +36,9 @@ export class RssFetcher extends BaseFetcher {
         (item as any)['media:content']?.$.url ||
         (item as any)['media:thumbnail']?.$.url ||
         (item as any).enclosure?.url ||
+        extractImgFromHtml((item as any)['content:encoded']) ||
+        extractImgFromHtml(item.content) ||
+        extractImgFromHtml(item.summary) ||
         null
 
       return {
