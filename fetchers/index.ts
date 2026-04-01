@@ -85,10 +85,10 @@ async function classifyArticle(title: string, description?: string | null): Prom
           content: `You are classifying articles for an AI NEWS website. Assign this article to ONE category, or mark as irrelevant.
 
 Categories:
-- app: New AI tools/apps that users can actually use, product feature launches, AI workflow tools, new platforms with hands-on functionality. Must be about a usable product. Exclude: funding rounds, investments, acquisitions, company valuations, enterprise deals, market reports.
+- app: A specific mobile app, web app, desktop app, browser extension, or AI tool that end-users can download/access and use directly. Must describe a concrete product with a name. Examples: "Slack adds AI features", "ChatGPT launches voice mode", "Figma releases new plugin", "Product Hunt top app of the day". NOT app: conferences, research, policy, security incidents, company strategy, enterprise B2B deals, government, education trends.
 - design: AIGC visual cases, AI-generated art, AI artists, creative expression, generative art, visual creation, creative design tools
 - uxui: Product design, user experience, interface interaction, AI product UI cases, interaction design, design systems, usability research
-- tech: AI model capabilities, AI research papers, model releases, AI company news, AI engineering, development tools, technical breakthroughs, AI policy, funding/investment/acquisition news
+- tech: AI model research, AI company news, AI policy, security, infrastructure, engineering, anything not about a specific usable product
 - irrelevant: sports, cooking, weather, celebrity gossip, traditional automotive, real estate, finance unrelated to AI, politics unrelated to AI
 
 Reply with ONLY one word: app, design, uxui, tech, or irrelevant.
@@ -238,12 +238,9 @@ async function enrichWithOgImages(articles: FetchedArticle[]): Promise<void> {
 
 // 所有来源配置
 const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
-  // APP
+  // APP (product-focused sources only)
   'techcrunch-ai':  () => new RssFetcher('https://techcrunch.com/category/artificial-intelligence/feed/').fetch(),
   'verge-ai':       () => new RssFetcher('https://www.theverge.com/rss/ai-artificial-intelligence/index.xml').fetch(),
-  'ainews':         () => new RssFetcher('https://www.artificialintelligence-news.com/feed/').fetch(),
-  'mit-tech-review':() => new RssFetcher('https://www.technologyreview.com/topic/artificial-intelligence/feed').fetch(),
-  'arstechnica':    () => new RssFetcher('https://feeds.arstechnica.com/arstechnica/index').fetch(),
   'wired-ai':       () => new RssFetcher('https://www.wired.com/feed/category/artificial-intelligence/latest/rss').fetch(),
   'jiqizhixin':     () => new RssFetcher('https://www.jiqizhixin.com/rss').fetch(),
   'producthunt':    () => new RssFetcher('https://www.producthunt.com/feed').fetch(),
@@ -382,6 +379,15 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   }).fetch(),
 
   // TECH
+  'ainews':         () => new RssFetcher('https://www.artificialintelligence-news.com/feed/').fetch(),
+  'mit-tech-review':() => new RssFetcher('https://www.technologyreview.com/topic/artificial-intelligence/feed').fetch(),
+  'arstechnica':    () => new RssFetcher('https://feeds.arstechnica.com/arstechnica/index').fetch(),
+  'aitoday':        () => new GenericScraper('https://www.aitoday.io/', {
+    listSelector: 'article, .post',
+    titleSelector: 'h2, h3',
+    linkSelector: 'a',
+    descSelector: 'p',
+  }).fetch(),
   'venturebeat':    () => new RssFetcher('https://venturebeat.com/feed/').fetch(),
   'aibusiness':     () => new RssFetcher('https://aibusiness.com/rss.xml').fetch(),
   'github-trending':() => new GithubTrendingFetcher().fetch(),

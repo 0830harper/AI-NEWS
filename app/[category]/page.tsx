@@ -24,7 +24,7 @@ export default async function CategoryPage({
   return (
     <div>
       <div className="mb-5">
-        <p className="text-xs font-medium uppercase tracking-widest text-gray-400">
+        <p className="text-xs font-medium tracking-widest text-gray-400">
           {label}
         </p>
       </div>

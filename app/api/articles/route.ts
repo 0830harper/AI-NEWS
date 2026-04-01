@@ -101,8 +101,11 @@ export async function GET(req: NextRequest) {
   }
 
   if (sourceIds !== null) {
-    // Use ai_category if available, otherwise fall back to source category
-    query = query.or(`ai_category.eq.${category},and(ai_category.is.null,source_id.in.(${sourceIds.join(',')}))`)
+    // Show articles where ai_category matches, OR ai_category is null and from a matching source
+    // Never show articles explicitly marked irrelevant
+    query = query
+      .or(`ai_category.eq.${category},and(ai_category.is.null,source_id.in.(${sourceIds.join(',')}))`)
+      .neq('ai_category', 'irrelevant')
   }
 
   // Pick 区只展示有 HN points 的文章
