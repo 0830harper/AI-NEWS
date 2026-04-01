@@ -10,8 +10,8 @@ interface Props {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  app: 'Tool / App',
-  design: 'Visual / Design',
+  app: 'Tool',
+  design: 'Visual',
   uxui: 'UX / UI',
   tech: 'Tech',
 }
