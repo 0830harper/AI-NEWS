@@ -56,8 +56,7 @@ function weightedSort(articles: any[], maxPerSource: number, limit: number): any
     })
     .sort((a, b) => b.weighted_score - a.weighted_score)
     .slice(0, limit)
-  // Trim to complete rows
-  return scored.slice(0, Math.floor(scored.length / COLS) * COLS)
+  return scored
 }
 
 export async function GET(req: NextRequest) {
@@ -94,20 +93,18 @@ export async function GET(req: NextRequest) {
 
   // 只有 Pick 区才加时间过滤
   if (isLatest) {
-    query = query.gte('published_at', pickCutoff)
-  }
-
-  if (!isLatest) {
+    // 拉取全部候选文章（30天内有 HN points 的），排序后再分页
+    // 避免分页窗口重叠导致重复文章
+    query = query
+      .gte('published_at', pickCutoff)
+      .gt('raw_score', 0)
+      .range(0, 999)  // 最多取 1000 篇候选，足够覆盖所有精选
+  } else {
     query = query.range(offset, offset + windowSize - 1)
   }
 
   if (sourceIds !== null) {
     query = query.or(`ai_category.eq.${category},and(ai_category.is.null,source_id.in.(${sourceIds.join(',')}))`)
-  }
-
-  // Pick 区只展示有 HN points 的文章
-  if (isLatest) {
-    query = query.gt('raw_score', 0).range(offset, offset + windowSize * 4 - 1)
   }
 
   const { data, error } = await query
@@ -121,8 +118,9 @@ export async function GET(req: NextRequest) {
     }))
     .filter((a: any) => !hasGarbageTitle(a))
 
+  // Pick 页：全量排序后按页切片，确保无重复
   const result = isLatest
-    ? weightedSort(cleaned, 10, limit)
+    ? weightedSort(cleaned, 10, 9999).slice(offset, offset + limit)
     : diversify(cleaned, MAX_PER_SOURCE).slice(0, limit)
 
   return NextResponse.json({ articles: result, page, limit })
