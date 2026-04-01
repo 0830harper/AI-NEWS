@@ -300,6 +300,12 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
     baseUrl: 'https://notefolio.net',
   }).fetch(),
   'itsnicethat':    () => new RssFetcher('https://www.itsnicethat.com/rss').fetch(),
+  'adobe-blog':     () => new RssFetcher('https://blog.adobe.com/feed').fetch(),
+  'fastcompany-design': () => new RssFetcher('https://www.fastcompany.com/section/design/rss').fetch(),
+  'print-mag':      () => new RssFetcher('https://www.printmag.com/feed/').fetch(),
+  'creative-review':() => new RssFetcher('https://www.creativereview.co.uk/feed/').fetch(),
+  'medium-genart':  () => new RssFetcher('https://medium.com/feed/tag/generative-art').fetch(),
+  'medium-aiart':   () => new RssFetcher('https://medium.com/feed/tag/ai-art').fetch(),
 
   // UXUI - RSS
   'ux-collective':  () => new RssFetcher('https://uxdesign.cc/feed').fetch(),
