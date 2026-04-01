@@ -85,11 +85,11 @@ async function classifyArticle(title: string, description?: string | null): Prom
           content: `You are classifying articles for an AI NEWS website. Assign this article to ONE category, or mark as irrelevant.
 
 Categories:
-- app: A specific mobile app, web app, desktop app, browser extension, or AI tool that end-users can download/access and use directly. Must describe a concrete product with a name. Examples: "Slack adds AI features", "ChatGPT launches voice mode", "Figma releases new plugin", "Product Hunt top app of the day". NOT app: conferences, research, policy, security incidents, company strategy, enterprise B2B deals, government, education trends.
-- design: AI-related visual content ONLY: AI-generated art, AIGC creative cases, generative art with AI, AI image/video tools (Midjourney, Stable Diffusion, Sora, Firefly, DALL-E, Runway), AI artists, AI creative workflows, AI visual design tools. Must explicitly involve AI in the creative process. NOT: regular graphic design, branding, architecture, packaging, typography, photography, or any visual content without AI involvement.
-- uxui: Digital interface design ONLY: UX research, UI patterns, interaction design, usability testing, wireframes, prototyping, design systems for software products, mobile/web app interface. NOT architecture, NOT physical products, NOT branding.
-- tech: AI model research, AI company news, AI policy, security, infrastructure, engineering, anything not about a specific usable product
-- irrelevant: sports, cooking, weather, celebrity gossip, traditional automotive, real estate, finance unrelated to AI, politics unrelated to AI
+- app: A specific named mobile/web/desktop app or AI tool users can directly use. Must be about a concrete product launch, update, or feature. NOT: general AI news, research, company strategy, conferences, funding.
+- design: AI-involved visual creation ONLY: AI-generated images/video/art, AIGC cases, tools like Midjourney/DALL-E/Sora/Runway/Stable Diffusion/Firefly, AI artist workflows. Must explicitly use AI in the creative process. NOT: regular graphic design, branding, typography, architecture, packaging, photography without AI.
+- uxui: Practical digital UX/UI content: usability research, UI component patterns, interaction design, accessibility, design systems, app interface critique, prototyping methods. Must be actionable and about digital product interfaces. NOT: personal essays, book reviews, philosophical reflection, team management, career advice, job listings, typography essays, general "design thinking" without practical UI/UX methods.
+- tech: AI model research, AI company/policy news, AI engineering, developer tools, infrastructure, cybersecurity. Must be AI-related.
+- irrelevant: anything not AI-related — sports, politics, cooking, celebrity, real estate, general business, non-AI tech, essays without practical value, book reviews, job listings.
 
 Reply with ONLY one word: app, design, uxui, tech, or irrelevant.
 
