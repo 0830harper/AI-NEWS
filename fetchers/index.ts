@@ -306,6 +306,11 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   'creative-review':() => new RssFetcher('https://www.creativereview.co.uk/feed/').fetch(),
   'medium-genart':  () => new RssFetcher('https://medium.com/feed/tag/generative-art').fetch(),
   'medium-aiart':   () => new RssFetcher('https://medium.com/feed/tag/ai-art').fetch(),
+  'medium-midjourney':      () => new RssFetcher('https://medium.com/feed/tag/midjourney').fetch(),
+  'medium-stablediffusion': () => new RssFetcher('https://medium.com/feed/tag/stable-diffusion').fetch(),
+  'medium-aiimage':         () => new RssFetcher('https://medium.com/feed/tag/ai-image-generation').fetch(),
+  'medium-comfyui':         () => new RssFetcher('https://medium.com/feed/tag/comfyui').fetch(),
+  'medium-genai-art':       () => new RssFetcher('https://medium.com/feed/tag/generative-ai-art').fetch(),
 
   // UXUI - RSS
   'ux-collective':  () => new RssFetcher('https://uxdesign.cc/feed').fetch(),
