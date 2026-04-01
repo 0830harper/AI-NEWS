@@ -4,10 +4,10 @@ import CategoryFeed from '../../components/CategoryFeed'
 const VALID_CATEGORIES = ['app', 'design', 'uxui', 'tech']
 
 const CATEGORY_LABELS: Record<string, string> = {
-  app:    '📱 App',
-  design: '🎨 Design / ART',
+  app:    '⚙ Tool / App',
+  design: '◈ Visual / Design',
   uxui:   '✦ UX / UI',
-  tech:   '⚙️ Tech',
+  tech:   '⊞ Tech',
 }
 
 export default async function CategoryPage({

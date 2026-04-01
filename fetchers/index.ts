@@ -41,6 +41,25 @@ function hasRelevantKeyword(title: string, description?: string | null): boolean
   return AI_KEYWORDS.some(kw => text.toLowerCase().includes(kw.toLowerCase()))
 }
 
+// 融资/商业新闻关键词：命中则直接判 irrelevant，不进 AI 分类
+const FUNDING_PATTERNS = [
+  /raises?\s+\$[\d.]+\s*[mb]/i,
+  /raised?\s+\$[\d.]+\s*[mb]/i,
+  /\$[\d.]+\s*[mb]\s+(series\s+[a-e]|seed|funding|round)/i,
+  /series\s+[a-e]\s+round/i,
+  /funding\s+round/i,
+  /valuation\s+of\s+\$/i,
+  /\bipo\b/i,
+  /goes?\s+public/i,
+  /acqui(?:res?|sition)/i,
+  /lays?\s+off\s+\d+/i,
+]
+
+/** Returns true if title looks like a funding/M&A/layoff news article */
+function isFundingNews(title: string): boolean {
+  return FUNDING_PATTERNS.some(re => re.test(title))
+}
+
 /** Use SiliconFlow Qwen to classify an article into a specific category.
  *  Returns: 'app' | 'design' | 'uxui' | 'tech' | 'irrelevant' */
 async function classifyArticle(title: string, description?: string | null): Promise<string> {
@@ -66,10 +85,10 @@ async function classifyArticle(title: string, description?: string | null): Prom
           content: `You are classifying articles for an AI NEWS website. Assign this article to ONE category, or mark as irrelevant.
 
 Categories:
-- app: New AI tools, apps, product launches, AI workflows, automation tools, new websites/platforms, product use cases, AI application scenarios
+- app: New AI tools/apps that users can actually use, product feature launches, AI workflow tools, new platforms with hands-on functionality. Must be about a usable product. Exclude: funding rounds, investments, acquisitions, company valuations, enterprise deals, market reports.
 - design: AIGC visual cases, AI-generated art, AI artists, creative expression, generative art, visual creation, creative design tools
 - uxui: Product design, user experience, interface interaction, AI product UI cases, interaction design, design systems, usability research
-- tech: AI model capabilities, AI research papers, model releases, AI company news, AI engineering, development tools, technical breakthroughs, AI policy
+- tech: AI model capabilities, AI research papers, model releases, AI company news, AI engineering, development tools, technical breakthroughs, AI policy, funding/investment/acquisition news
 - irrelevant: sports, cooking, weather, celebrity gossip, traditional automotive, real estate, finance unrelated to AI, politics unrelated to AI
 
 Reply with ONLY one word: app, design, uxui, tech, or irrelevant.
@@ -98,8 +117,20 @@ Article: ${text}`,
 /** Filter irrelevant articles and assign AI category to each kept article. */
 async function filterIrrelevant(articles: FetchedArticle[]): Promise<FetchedArticle[]> {
   const results: FetchedArticle[] = []
-  for (let i = 0; i < articles.length; i += AI_CONCURRENCY) {
-    const batch = articles.slice(i, i + AI_CONCURRENCY)
+
+  // Step 1: 融资新闻关键词预过滤，直接跳过，不调 AI
+  const toClassify: FetchedArticle[] = []
+  for (const article of articles) {
+    if (isFundingNews(article.title)) {
+      console.log(`  ✗ filtered (funding): ${article.title.slice(0, 60)}`)
+    } else {
+      toClassify.push(article)
+    }
+  }
+
+  // Step 2: AI 分类
+  for (let i = 0; i < toClassify.length; i += AI_CONCURRENCY) {
+    const batch = toClassify.slice(i, i + AI_CONCURRENCY)
     const labels = await Promise.all(
       batch.map(a => classifyArticle(a.title, a.description))
     )
@@ -212,12 +243,10 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   'verge-ai':       () => new RssFetcher('https://www.theverge.com/rss/ai-artificial-intelligence/index.xml').fetch(),
   'ainews':         () => new RssFetcher('https://www.artificialintelligence-news.com/feed/').fetch(),
   'mit-tech-review':() => new RssFetcher('https://www.technologyreview.com/topic/artificial-intelligence/feed').fetch(),
-  'venturebeat':    () => new RssFetcher('https://venturebeat.com/feed/').fetch(),
-  'aibusiness':     () => new RssFetcher('https://aibusiness.com/rss.xml').fetch(),
   'arstechnica':    () => new RssFetcher('https://feeds.arstechnica.com/arstechnica/index').fetch(),
-  'deepmind':       () => new RssFetcher('https://deepmind.google/blog/rss.xml').fetch(),
   'wired-ai':       () => new RssFetcher('https://www.wired.com/feed/category/artificial-intelligence/latest/rss').fetch(),
   'jiqizhixin':     () => new RssFetcher('https://www.jiqizhixin.com/rss').fetch(),
+  'producthunt':    () => new RssFetcher('https://www.producthunt.com/feed').fetch(),
   'radar-ai':       () => new GenericScraper('https://radarai.top/', {
     listSelector: 'article, .post, .item',
     titleSelector: 'h2, h3, .title',
@@ -353,6 +382,8 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   }).fetch(),
 
   // TECH
+  'venturebeat':    () => new RssFetcher('https://venturebeat.com/feed/').fetch(),
+  'aibusiness':     () => new RssFetcher('https://aibusiness.com/rss.xml').fetch(),
   'github-trending':() => new GithubTrendingFetcher().fetch(),
   'hackernews':     () => new HackerNewsFetcher().fetch(),
   'huggingface':    () => new HuggingFaceFetcher().fetch(),
