@@ -197,16 +197,16 @@ async function saveArticle(sourceId: number, article: FetchedArticle, heatScore:
     tags: article.tags,
     ai_category: article.ai_category || null,
   }
-  const { data: existing } = await supabaseAdmin
+  const { data: existing } = await (supabaseAdmin as any)
     .from('articles')
     .select('id')
     .eq('url_hash', urlHash)
     .maybeSingle()
 
   if (existing) {
-    await supabaseAdmin.from('articles').update(payload).eq('url_hash', urlHash)
+    await (supabaseAdmin as any).from('articles').update(payload).eq('url_hash', urlHash)
   } else {
-    await supabaseAdmin.from('articles').insert({
+    await (supabaseAdmin as any).from('articles').insert({
       ...payload,
       published_at: article.published_at.toISOString(),
     })
@@ -382,12 +382,6 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   'ainews':         () => new RssFetcher('https://www.artificialintelligence-news.com/feed/').fetch(),
   'mit-tech-review':() => new RssFetcher('https://www.technologyreview.com/topic/artificial-intelligence/feed').fetch(),
   'arstechnica':    () => new RssFetcher('https://feeds.arstechnica.com/arstechnica/index').fetch(),
-  'aitoday':        () => new GenericScraper('https://www.aitoday.io/', {
-    listSelector: 'article, .post',
-    titleSelector: 'h2, h3',
-    linkSelector: 'a',
-    descSelector: 'p',
-  }).fetch(),
   'venturebeat':    () => new RssFetcher('https://venturebeat.com/feed/').fetch(),
   'aibusiness':     () => new RssFetcher('https://aibusiness.com/rss.xml').fetch(),
   'github-trending':() => new GithubTrendingFetcher().fetch(),
@@ -422,7 +416,7 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
 }
 
 export async function fetchByCategory(category: string) {
-  const { data: sources } = await supabaseAdmin
+  const { data: sources } = await (supabaseAdmin as any)
     .from('sources')
     .select('*')
     .eq('is_active', true)
@@ -451,7 +445,7 @@ export async function fetchByCategory(category: string) {
         await saveArticle(source.id, article, heatScore)
       }
 
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('sources')
         .update({
           last_fetched_at: new Date().toISOString(),
@@ -463,7 +457,7 @@ export async function fetchByCategory(category: string) {
       console.log(`✓ ${source.name}: ${relevant.length}/${articles.length} articles saved`)
     } catch (err: any) {
       console.error(`✗ ${source.name}: ${err.message}`)
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('sources')
         .update({
           last_fetched_at: new Date().toISOString(),
@@ -476,7 +470,7 @@ export async function fetchByCategory(category: string) {
 }
 
 export async function fetchAll() {
-  const { data: sources } = await supabaseAdmin
+  const { data: sources } = await (supabaseAdmin as any)
     .from('sources')
     .select('*')
     .eq('is_active', true)
@@ -505,7 +499,7 @@ export async function fetchAll() {
       }
 
       // 更新来源状态
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('sources')
         .update({
           last_fetched_at: new Date().toISOString(),
@@ -517,7 +511,7 @@ export async function fetchAll() {
       console.log(`✓ ${source.name}: ${articles.length} articles`)
     } catch (err: any) {
       console.error(`✗ ${source.name}: ${err.message}`)
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('sources')
         .update({
           last_fetched_at: new Date().toISOString(),

@@ -6,6 +6,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  await supabaseAdmin.rpc('increment_click', { article_id: parseInt(id) })
+  await (supabaseAdmin as any).rpc('increment_click', { article_id: parseInt(id) })
   return NextResponse.json({ ok: true })
 }
