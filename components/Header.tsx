@@ -30,15 +30,15 @@ export default function Header() {
               href={href}
               className={`group flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150
                 ${isActive
-                  ? 'bg-gray-900 text-white shadow-sm'
-                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}
+                  ? 'bg-gray-100 text-gray-900 ring-1 ring-gray-200'
+                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}
             >
               <Image
                 src={cat.icon}
                 alt={cat.label}
                 width={cat.size}
                 height={cat.size}
-                className={`shrink-0 transition-transform duration-150 group-hover:scale-110 ${isActive ? 'brightness-0 invert' : ''}`}
+                className="shrink-0 transition-transform duration-150 group-hover:scale-110"
               />
               <span className={isActive ? 'inline' : 'hidden sm:inline'}>{cat.label}</span>
             </Link>
