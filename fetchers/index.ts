@@ -12,7 +12,7 @@ import { GenericScraper } from './scraper/generic'
 import { FetchedArticle } from '../types'
 
 // 并发限制
-const OG_CONCURRENCY = 5
+const OG_CONCURRENCY = 20
 const HN_CONCURRENCY = 5
 const HN_TIMEOUT_MS = 4000
 const AI_CONCURRENCY = 20
