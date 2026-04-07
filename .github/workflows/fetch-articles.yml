@@ -27,19 +27,19 @@ jobs:
 
       - run: npm ci
 
-      - name: Pick category by UTC hour
+      - name: Pick category by schedule
         id: pick
         run: |
-          HOUR=$(date -u +%-H)
-          case $HOUR in
-            16) CAT=app ;;
-            22) CAT=design ;;
-            4)  CAT=uxui ;;
-            10) CAT=tech ;;
-            *)  CAT="${{ github.event.inputs.category || 'app' }}" ;;
+          SCHEDULE="${{ github.event.schedule }}"
+          case "$SCHEDULE" in
+            "0 16 * * *") CAT=app ;;
+            "0 22 * * *") CAT=design ;;
+            "0 4 * * *")  CAT=uxui ;;
+            "0 10 * * *") CAT=tech ;;
+            *)             CAT="${{ github.event.inputs.category || 'app' }}" ;;
           esac
           echo "cat=$CAT" >> $GITHUB_OUTPUT
-          echo "Fetching category: $CAT"
+          echo "Fetching category: $CAT (triggered by schedule: $SCHEDULE)"
 
       - name: Write and verify .env.local
         env:
