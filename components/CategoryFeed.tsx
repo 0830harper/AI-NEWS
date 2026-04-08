@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import MasonryGrid from './MasonryGrid'
 import { Article } from '../types'
+import { useTranslation } from '../contexts/TranslationContext'
 
 interface Props {
   category: string
@@ -16,6 +17,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [hasMore, setHasMore] = useState(true)
+  const { isZh, translateArticles } = useTranslation()
 
   const fetchPage = useCallback(async (pageNum: number) => {
     setLoading(true)
@@ -28,8 +30,10 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       setArticles(prev => pageNum === 1 ? newArticles : [...prev, ...newArticles])
       setHasMore(newArticles.length > 0)
       setPage(pageNum)
+      return newArticles
     } catch (e) {
       console.error('Failed to load articles:', e)
+      return []
     } finally {
       setLoading(false)
       setInitialLoading(false)
@@ -43,6 +47,13 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     setInitialLoading(true)
     fetchPage(1)
   }, [category, fetchPage])
+
+  // Translate when isZh toggles on
+  useEffect(() => {
+    if (isZh && articles.length > 0) {
+      translateArticles(articles)
+    }
+  }, [isZh, articles, translateArticles])
 
   if (initialLoading) {
     return (
@@ -60,6 +71,13 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     )
   }
 
+  const handleLoadMore = async () => {
+    const newArticles = await fetchPage(page + 1)
+    if (isZh && newArticles.length > 0) {
+      translateArticles(newArticles)
+    }
+  }
+
   return (
     <div>
       <MasonryGrid articles={articles} showCategory={showCategory} />
@@ -67,7 +85,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       {hasMore && (
         <div className="flex justify-center mt-10 mb-6">
           <button
-            onClick={() => fetchPage(page + 1)}
+            onClick={handleLoadMore}
             disabled={loading}
             className="transition-transform duration-150 hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
           >

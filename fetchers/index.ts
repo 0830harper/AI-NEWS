@@ -426,6 +426,16 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   }).fetch(),
 }
 
+/** Normalize a title for deduplication: lowercase, strip punctuation, collapse spaces, first 80 chars */
+function normalizeTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fff\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80)
+}
+
 export async function fetchByCategory(category: string) {
   const { data: sources } = await (supabaseAdmin as any)
     .from('sources')
@@ -434,6 +444,16 @@ export async function fetchByCategory(category: string) {
     .eq('category', category)
 
   if (!sources) return
+
+  // Build dedup set from articles published in the last 7 days
+  const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
+  const { data: recentArticles } = await (supabaseAdmin as any)
+    .from('articles')
+    .select('title')
+    .gte('published_at', since)
+  const existingTitles = new Set<string>(
+    (recentArticles || []).map((a: any) => normalizeTitle(a.title))
+  )
 
   for (const source of sources) {
     const fetcher = FETCHER_MAP[source.slug]
@@ -450,10 +470,20 @@ export async function fetchByCategory(category: string) {
       const relevant = await filterIrrelevant(articles)
       console.log(`  AI filter: ${articles.length} → ${relevant.length} kept`)
 
+      let saved = 0
+      let dupes = 0
       for (const article of relevant) {
         if (!article.url || !article.title) continue
+        const norm = normalizeTitle(article.title)
+        if (existingTitles.has(norm)) {
+          console.log(`  ✗ duplicate: ${article.title.slice(0, 60)}`)
+          dupes++
+          continue
+        }
+        existingTitles.add(norm)
         const heatScore = calcHeatScore(article.raw_score, article.published_at)
         await saveArticle(source.id, article, heatScore)
+        saved++
       }
 
       await (supabaseAdmin as any)
@@ -465,7 +495,7 @@ export async function fetchByCategory(category: string) {
         })
         .eq('id', source.id)
 
-      console.log(`✓ ${source.name}: ${relevant.length}/${articles.length} articles saved`)
+      console.log(`✓ ${source.name}: ${saved} saved, ${dupes} dupes skipped (${articles.length} total)`)
     } catch (err: any) {
       console.error(`✗ ${source.name}: ${err.message}`)
       await (supabaseAdmin as any)

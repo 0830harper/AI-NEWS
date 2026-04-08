@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Article } from '../types'
 import { formatDate } from '../lib/utils'
 import { isLightColor } from '../lib/colors'
+import { useTranslation } from '../contexts/TranslationContext'
 
 interface Props {
   article: Article
@@ -44,6 +45,10 @@ function trimDesc(raw: string): string {
 
 export default function ArticleCard({ article, showCategory = false }: Props) {
   const [imgReady, setImgReady] = useState(false)
+  const { isZh, translations } = useTranslation()
+  const translated = translations[article.id]
+  const title = (isZh && translated?.title) ? translated.title : article.title
+  const description = (isZh && translated?.description !== undefined) ? translated.description : article.description
   const sourceName = article.sources?.name || 'Unknown'
   const sourceDate = formatDate(article.published_at)
   const category = article.sources?.category
@@ -85,11 +90,11 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
           </div>
           <div className="pt-3 px-0.5">
             <h2 className="text-xl font-bold text-gray-900 leading-snug mb-1.5">
-              {article.title}
+              {title}
             </h2>
-            {article.description && (
+            {description && (
               <p className="text-[13px] text-gray-500 leading-relaxed mb-1.5">
-                {trimDesc(article.description)}
+                {trimDesc(description)}
               </p>
             )}
             <div className="flex items-center justify-between">
@@ -114,11 +119,11 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
           style={{ backgroundColor: article.card_color }}
         >
           <h2 className="text-xl font-bold text-gray-900 leading-snug">
-            {article.title}
+            {title}
           </h2>
-          {article.description && (
+          {description && (
             <p className={`text-[13px] font-medium leading-relaxed mt-2 ${lightBg ? 'text-gray-500' : 'text-white/90'}`}>
-              {trimDesc(article.description)}
+              {trimDesc(description)}
             </p>
           )}
           <div className="flex items-center justify-between mt-3">
