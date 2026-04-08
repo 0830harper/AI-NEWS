@@ -63,7 +63,7 @@ export default function Header() {
       <div className="border-t border-gray-100">
         <form
           onSubmit={handleSearchSubmit}
-          className="max-w-7xl mx-auto px-4 py-2 flex items-center gap-2"
+          className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-end gap-2"
         >
           <div className="relative w-full max-w-md">
             <button
