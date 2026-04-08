@@ -65,7 +65,7 @@ export default function Header() {
           onSubmit={handleSearchSubmit}
           className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-end gap-2"
         >
-          <div className="relative w-full max-w-md">
+          <div className="relative w-80">
             <button
               type="submit"
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
