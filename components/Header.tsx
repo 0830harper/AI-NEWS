@@ -6,11 +6,11 @@ import { useState, useRef } from 'react'
 import { useTranslation } from '../contexts/TranslationContext'
 
 const categories = [
-  { slug: '',        label: 'Pick',   icon: '/icons/pick.svg',   size: 32 },
-  { slug: 'app',    label: 'Tool',   icon: '/icons/tool.svg',   size: 36 },
-  { slug: 'design', label: 'Visual', icon: '/icons/visual.svg', size: 42 },
-  { slug: 'uxui',   label: 'UX / UI',icon: '/icons/uxui.svg',   size: 38 },
-  { slug: 'tech',   label: 'Tech',   icon: '/icons/tech.svg',   size: 38 },
+  { slug: '',        label: 'Pick',   icon: '/icons/pick.svg',   size: 32, w: 'w-24' },
+  { slug: 'app',    label: 'Tool',   icon: '/icons/tool.svg',   size: 36, w: 'w-24' },
+  { slug: 'design', label: 'Visual', icon: '/icons/visual.svg', size: 42, w: 'w-28' },
+  { slug: 'uxui',   label: 'UX / UI',icon: '/icons/uxui.svg',   size: 38, w: 'w-28' },
+  { slug: 'tech',   label: 'Tech',   icon: '/icons/tech.svg',   size: 38, w: 'w-24' },
 ]
 
 export default function Header() {
@@ -47,7 +47,7 @@ export default function Header() {
               <Link
                 key={cat.slug}
                 href={href}
-                className={`group flex items-center justify-center gap-1.5 w-24 py-1.5 rounded-lg text-sm font-medium transition-all duration-150
+                className={`group flex items-center justify-center gap-1.5 ${cat.w} py-1.5 rounded-lg text-sm font-medium transition-all duration-150
                   ${isActive
                     ? 'bg-gray-100 text-gray-900 ring-1 ring-gray-200'
                     : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}
