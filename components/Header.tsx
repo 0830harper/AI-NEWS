@@ -29,11 +29,16 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-gray-100">
-      {/* Row 1: logo + nav */}
-      <div className="max-w-7xl mx-auto px-4 h-13 flex items-center justify-between">
+      {/* Row 1: logo */}
+      <div className="max-w-7xl mx-auto px-4 pt-3 pb-1">
         <Link href="/">
           <Image src="/icons/logo.svg" alt="AINEWS" width={178} height={47} priority />
         </Link>
+      </div>
+
+      {/* Row 2: nav (left) + search + 中文 (right) */}
+      <div className="max-w-7xl mx-auto px-4 pb-2 flex items-center justify-between gap-3">
+        {/* Category nav */}
         <nav className="flex gap-0.5 sm:gap-1">
           {categories.map((cat) => {
             const href = cat.slug ? `/${cat.slug}` : '/'
@@ -59,11 +64,42 @@ export default function Header() {
             )
           })}
         </nav>
-      </div>
 
-      {/* Row 2: translate toggle + search bar */}
-      <div className="border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
+        {/* Search + 中文 */}
+        <div className="flex items-center gap-2 shrink-0">
+          <form onSubmit={handleSearchSubmit}>
+            <div className="relative w-64">
+              <button
+                type="submit"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label="Search"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </button>
+              <input
+                ref={inputRef}
+                type="text"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                placeholder="Search articles…"
+                className="w-full pl-9 pr-8 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={() => { setSearchInput(''); inputRef.current?.focus() }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </form>
+
           {/* 中文 toggle */}
           <button
             onClick={toggle}
@@ -82,40 +118,6 @@ export default function Header() {
               '中文'
             )}
           </button>
-
-          {/* Search */}
-          <form onSubmit={handleSearchSubmit} className="flex items-center justify-end flex-1">
-            <div className="relative w-80">
-              <button
-                type="submit"
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                aria-label="Search"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </button>
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
-                placeholder="Search articles… e.g. Claude, Figma, GPT-4"
-                className="w-full pl-9 pr-8 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => { setSearchInput(''); inputRef.current?.focus() }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </form>
         </div>
       </div>
     </header>
