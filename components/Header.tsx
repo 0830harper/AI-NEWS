@@ -37,7 +37,7 @@ export default function Header() {
       </div>
 
       {/* Row 2: nav (left) + search + 中文 (right) */}
-      <div className="max-w-7xl mx-auto px-4 pb-2 flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto px-4 pt-1 pb-2 flex items-center justify-between gap-3">
         {/* Category nav */}
         <nav className="flex gap-0.5 sm:gap-1">
           {categories.map((cat) => {
