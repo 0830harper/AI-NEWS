@@ -17,14 +17,20 @@ export default function MasonryGrid({ articles, showCategory = false, cols = 3 }
     )
   }
 
-  const colClass = cols === 2
-    ? 'columns-1 sm:columns-2'
-    : 'columns-1 sm:columns-2 lg:columns-3'
+  // Distribute articles round-robin across columns for left-to-right reading order
+  const columns: Article[][] = Array.from({ length: cols }, () => [])
+  articles.forEach((article, i) => {
+    columns[i % cols].push(article)
+  })
 
   return (
-    <div className={`${colClass} gap-6 md:gap-8`}>
-      {articles.map((article) => (
-        <ArticleCard key={article.id} article={article} showCategory={showCategory} />
+    <div className="flex gap-6 md:gap-8 items-start">
+      {columns.map((col, ci) => (
+        <div key={ci} className="flex-1 flex flex-col gap-6 md:gap-8">
+          {col.map(article => (
+            <ArticleCard key={article.id} article={article} showCategory={showCategory} />
+          ))}
+        </div>
       ))}
     </div>
   )
