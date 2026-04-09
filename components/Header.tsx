@@ -150,7 +150,7 @@ export default function Header() {
               <text x="50" y="27" textAnchor="middle" dominantBaseline="central"
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
                 fontSize="13" fontWeight="900" fill={isZh ? 'var(--translate-active-text)' : 'var(--translate-text)'} letterSpacing="0.5">
-                {isTranslating ? '…' : (isZh ? '中文' : 'EN')}
+                {isTranslating ? '…' : '中文'}
               </text>
             </svg>
           </button>
