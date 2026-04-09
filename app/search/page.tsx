@@ -3,10 +3,12 @@ import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import MasonryGrid from '../../components/MasonryGrid'
 import { Article } from '../../types'
+import { useTranslation } from '../../contexts/TranslationContext'
 
 function SearchContent() {
   const searchParams = useSearchParams()
   const q = searchParams.get('q') || ''
+  const { isZh } = useTranslation()
 
   const [articles, setArticles] = useState<Article[]>([])
   const [total, setTotal] = useState<number | null>(null)
@@ -56,7 +58,7 @@ function SearchContent() {
 
       {/* Results */}
       {articles.length > 0 && (
-        <MasonryGrid articles={articles} showCategory={true} />
+        <MasonryGrid key={isZh ? 'zh' : 'en'} articles={articles} showCategory={true} />
       )}
 
       {/* Load more */}

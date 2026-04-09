@@ -80,7 +80,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
   return (
     <div>
-      <MasonryGrid articles={articles} showCategory={showCategory} />
+      <MasonryGrid key={isZh ? 'zh' : 'en'} articles={articles} showCategory={showCategory} />
 
       {hasMore && (
         <div className="flex justify-center mt-10 mb-6">
