@@ -39,7 +39,7 @@ export default function Header() {
       {/* Row 2: nav (left) + search + 中文 (right) */}
       <div className="max-w-7xl mx-auto px-4 pt-1 pb-2 flex items-center justify-between gap-3">
         {/* Category nav */}
-        <nav className="flex gap-0.5 sm:gap-1">
+        <nav className="flex">
           {categories.map((cat) => {
             const href = cat.slug ? `/${cat.slug}` : '/'
             const isActive = pathname === href
@@ -47,7 +47,7 @@ export default function Header() {
               <Link
                 key={cat.slug}
                 href={href}
-                className={`group flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150
+                className={`group flex items-center justify-center gap-1.5 w-24 py-1.5 rounded-lg text-sm font-medium transition-all duration-150
                   ${isActive
                     ? 'bg-gray-100 text-gray-900 ring-1 ring-gray-200'
                     : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}
