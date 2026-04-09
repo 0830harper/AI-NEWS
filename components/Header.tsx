@@ -134,47 +134,25 @@ export default function Header() {
           <button
             onClick={toggle}
             disabled={isTranslating}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              height: '34px',
-              padding: '0 12px',
-              border: '2.5px solid var(--translate-border)',
-              borderRadius: '10px',
-              backgroundColor: isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)',
-              fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
-              fontSize: '12px',
-              fontWeight: 900,
-              color: isZh ? 'var(--translate-active-text)' : 'var(--translate-text)',
-              cursor: 'pointer',
-              letterSpacing: '1px',
-              filter: 'drop-shadow(3px 4px 0px var(--translate-shadow))',
-              boxSizing: 'border-box',
-              transition: 'all 0.15s',
-              whiteSpace: 'nowrap',
-            }}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'none', border: 'none', padding: 0, opacity: isTranslating ? 0.6 : 1, transition: 'opacity 0.15s' }}
           >
-            {isTranslating ? (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '12px', height: '12px', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
-                翻译中
-              </span>
-            ) : (
-              <>
-                <svg width="16" height="16" viewBox="0 0 28 28" fill="none">
-                  <circle cx="14" cy="14" r="11" fill="var(--translate-shadow)" transform="translate(1.5,2)"/>
-                  <circle cx="14" cy="14" r="11" fill="var(--translate-bg)"/>
-                  <circle cx="14" cy="14" r="11" fill="none" stroke="var(--translate-border)" strokeWidth="2.5"/>
-                  <ellipse cx="14" cy="14" rx="4.8" ry="11" fill="none" stroke="var(--translate-border)" strokeWidth="1.8"/>
-                  <line x1="3" y1="14" x2="25" y2="14" stroke="var(--translate-border)" strokeWidth="1.8" strokeLinecap="round"/>
-                  <path d="M4 9.5 Q14 7 24 9.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.8" strokeLinecap="round"/>
-                  <path d="M4 18.5 Q14 21 24 18.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.8" strokeLinecap="round"/>
-                </svg>
-                中文
-              </>
-            )}
+            <svg width="64" height="34" viewBox="0 0 74 54" fill="none">
+              <rect x="2" y="4" width="69" height="46" rx="10" fill="var(--translate-shadow)" transform="translate(3,4)"/>
+              <rect x="2" y="4" width="69" height="46" rx="10" fill={isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)'}/>
+              <rect x="2" y="4" width="69" height="46" rx="10" fill="none" stroke="var(--translate-border)" strokeWidth="3.5"/>
+              <circle cx="22" cy="27" r="10" fill="var(--translate-shadow)" transform="translate(1,1.5)"/>
+              <circle cx="22" cy="27" r="10" fill={isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)'}/>
+              <circle cx="22" cy="27" r="10" fill="none" stroke="var(--translate-border)" strokeWidth="2.2"/>
+              <ellipse cx="22" cy="27" rx="4.2" ry="10" fill="none" stroke="var(--translate-border)" strokeWidth="1.6"/>
+              <line x1="12" y1="27" x2="32" y2="27" stroke="var(--translate-border)" strokeWidth="1.6" strokeLinecap="round"/>
+              <path d="M13 22.5 Q22 20.5 31 22.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.6" strokeLinecap="round"/>
+              <path d="M13 31.5 Q22 33.5 31 31.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.6" strokeLinecap="round"/>
+              <text x="50" y="27" textAnchor="middle" dominantBaseline="central"
+                fontFamily="'Arial Black','Helvetica Neue',sans-serif"
+                fontSize="13" fontWeight="900" fill={isZh ? 'var(--translate-active-text)' : 'var(--translate-text)'} letterSpacing="0.5">
+                {isTranslating ? '…' : (isZh ? '中文' : 'EN')}
+              </text>
+            </svg>
           </button>
         </div>
       </div>
