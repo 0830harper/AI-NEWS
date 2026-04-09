@@ -89,25 +89,25 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             </div>
           </div>
           <div className="pt-3 px-0.5">
-            <h2 className="text-xl font-bold text-gray-900 leading-snug mb-1.5">
+            <h2 className="text-xl font-bold leading-snug mb-1.5" style={{ color: 'var(--card-title)' }}>
               {title}
             </h2>
             {description && (
-              <p className="text-[13px] text-gray-500 leading-relaxed mb-1.5">
+              <p className="text-[13px] leading-relaxed mb-1.5" style={{ color: 'var(--card-desc)' }}>
                 {trimDesc(description)}
               </p>
             )}
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-gray-400 flex items-center gap-2">
+              <span className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--card-source)' }}>
                 {sourceName}
                 {showCategory && categoryLabel && (
-                  <span className="px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-500">
+                  <span className="px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide" style={{ backgroundColor: 'var(--nav-active-bg)', color: 'var(--card-source)' }}>
                     {categoryLabel}
                   </span>
                 )}
               </span>
               <span className="flex items-center gap-2">
-                <span className="text-sm text-gray-300">{sourceDate}</span>
+                <span className="text-sm" style={{ color: 'var(--card-date)' }}>{sourceDate}</span>
               </span>
             </div>
           </div>

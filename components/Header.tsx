@@ -28,7 +28,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-10 bg-white border-b border-gray-100">
+    <header style={{ backgroundColor: 'var(--header-bg)', borderBottom: '1px solid var(--header-border)' }} className="sticky top-0 z-10">
       {/* Row 1: logo */}
       <div className="max-w-7xl mx-auto px-4 py-3">
         <Link href="/">
@@ -47,10 +47,14 @@ export default function Header() {
               <Link
                 key={cat.slug}
                 href={href}
-                className={`group flex items-center justify-center gap-1.5 ${cat.w} py-1.5 rounded-lg text-sm font-medium transition-all duration-150
-                  ${isActive
-                    ? 'bg-gray-100 text-gray-900 ring-1 ring-gray-200'
-                    : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}
+                className={`group flex items-center justify-center gap-1.5 ${cat.w} py-1.5 rounded-lg text-sm font-medium transition-all duration-150`}
+                style={isActive ? {
+                  backgroundColor: 'var(--nav-active-bg)',
+                  color: 'var(--nav-active-text)',
+                  boxShadow: '0 0 0 1px var(--nav-active-ring)',
+                } : {
+                  color: 'var(--nav-inactive-text)',
+                }}
               >
                 <Image
                   src={cat.icon}
@@ -75,10 +79,10 @@ export default function Header() {
                 alignItems: 'center',
                 width: '220px',
                 height: '34px',
-                border: '2.5px solid #1a1a1a',
+                border: '2.5px solid var(--search-border)',
                 borderRadius: '10px',
-                background: '#ffffff',
-                filter: 'drop-shadow(3px 4px 0px #c0c0c0)',
+                background: 'var(--search-bg)',
+                filter: 'drop-shadow(3px 4px 0px var(--search-shadow))',
                 boxSizing: 'border-box',
               }}
             >
@@ -95,7 +99,7 @@ export default function Header() {
                   background: 'transparent',
                   padding: '0 36px 0 12px',
                   fontSize: '12px',
-                  color: '#1a1a1a',
+                  color: 'var(--search-text)',
                   outline: 'none',
                   borderRadius: '10px',
                   boxSizing: 'border-box',
@@ -107,7 +111,7 @@ export default function Header() {
                   onClick={() => { setSearchInput(''); inputRef.current?.focus() }}
                   style={{ position: 'absolute', right: '13px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--search-text)" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
                 </button>
@@ -118,8 +122,8 @@ export default function Header() {
                   style={{ position: 'absolute', right: '13px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, pointerEvents: 'none' }}
                 >
                   <svg width="17" height="17" viewBox="0 0 18 18" fill="none">
-                    <circle cx="7.5" cy="7.5" r="6" stroke="#1a1a1a" strokeWidth="3"/>
-                    <line x1="12" y1="12" x2="16.5" y2="16.5" stroke="#1a1a1a" strokeWidth="3" strokeLinecap="round"/>
+                    <circle cx="7.5" cy="7.5" r="6" stroke="var(--search-text)" strokeWidth="3"/>
+                    <line x1="12" y1="12" x2="16.5" y2="16.5" stroke="var(--search-text)" strokeWidth="3" strokeLinecap="round"/>
                   </svg>
                 </button>
               )}
@@ -137,16 +141,16 @@ export default function Header() {
               gap: '8px',
               height: '34px',
               padding: '0 12px',
-              border: '2.5px solid #1a1a1a',
+              border: '2.5px solid var(--translate-border)',
               borderRadius: '10px',
-              backgroundColor: isZh ? '#1a1a1a' : '#ffffff',
+              backgroundColor: isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)',
               fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
               fontSize: '12px',
               fontWeight: 900,
-              color: isZh ? '#ffffff' : '#1a1a1a',
+              color: isZh ? 'var(--translate-active-text)' : 'var(--translate-text)',
               cursor: 'pointer',
               letterSpacing: '1px',
-              filter: 'drop-shadow(3px 4px 0px #c0c0c0)',
+              filter: 'drop-shadow(3px 4px 0px var(--translate-shadow))',
               boxSizing: 'border-box',
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
@@ -160,13 +164,13 @@ export default function Header() {
             ) : (
               <>
                 <svg width="16" height="16" viewBox="0 0 28 28" fill="none">
-                  <circle cx="14" cy="14" r="11" fill="#c0c0c0" transform="translate(1.5,2)"/>
-                  <circle cx="14" cy="14" r="11" fill="#ffffff"/>
-                  <circle cx="14" cy="14" r="11" fill="none" stroke="#1a1a1a" strokeWidth="2.5"/>
-                  <ellipse cx="14" cy="14" rx="4.8" ry="11" fill="none" stroke="#1a1a1a" strokeWidth="1.8"/>
-                  <line x1="3" y1="14" x2="25" y2="14" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round"/>
-                  <path d="M4 9.5 Q14 7 24 9.5" fill="none" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round"/>
-                  <path d="M4 18.5 Q14 21 24 18.5" fill="none" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round"/>
+                  <circle cx="14" cy="14" r="11" fill="var(--translate-shadow)" transform="translate(1.5,2)"/>
+                  <circle cx="14" cy="14" r="11" fill="var(--translate-bg)"/>
+                  <circle cx="14" cy="14" r="11" fill="none" stroke="var(--translate-border)" strokeWidth="2.5"/>
+                  <ellipse cx="14" cy="14" rx="4.8" ry="11" fill="none" stroke="var(--translate-border)" strokeWidth="1.8"/>
+                  <line x1="3" y1="14" x2="25" y2="14" stroke="var(--translate-border)" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M4 9.5 Q14 7 24 9.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M4 18.5 Q14 21 24 18.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.8" strokeLinecap="round"/>
                 </svg>
                 中文
               </>
