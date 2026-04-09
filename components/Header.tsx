@@ -30,7 +30,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-gray-100">
       {/* Row 1: logo */}
-      <div className="max-w-7xl mx-auto px-4 pt-3 pb-1">
+      <div className="max-w-7xl mx-auto px-4 py-3">
         <Link href="/">
           <Image src="/icons/logo.svg" alt="AINEWS" width={178} height={47} priority />
         </Link>
