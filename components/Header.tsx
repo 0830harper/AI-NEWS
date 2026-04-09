@@ -66,34 +66,60 @@ export default function Header() {
         </nav>
 
         {/* Search + 中文 */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <form onSubmit={handleSearchSubmit}>
-            <div className="relative w-64">
-              <button
-                type="submit"
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                aria-label="Search"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </button>
+            <div
+              style={{
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                width: '280px',
+                height: '46px',
+                border: '3.5px solid #1a1a1a',
+                borderRadius: '10px',
+                background: '#ffffff',
+                filter: 'drop-shadow(3px 4px 0px #c0c0c0)',
+                boxSizing: 'border-box',
+              }}
+            >
               <input
                 ref={inputRef}
                 type="text"
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
                 placeholder="Search articles…"
-                className="w-full pl-9 pr-8 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  background: 'transparent',
+                  padding: '0 42px 0 14px',
+                  fontSize: '13px',
+                  color: '#1a1a1a',
+                  outline: 'none',
+                  borderRadius: '10px',
+                  boxSizing: 'border-box',
+                }}
               />
-              {searchInput && (
+              {searchInput ? (
                 <button
                   type="button"
                   onClick={() => { setSearchInput(''); inputRef.current?.focus() }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  style={{ position: 'absolute', right: '13px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  aria-label="Search"
+                  style={{ position: 'absolute', right: '13px', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, pointerEvents: 'none' }}
+                >
+                  <svg width="17" height="17" viewBox="0 0 18 18" fill="none">
+                    <circle cx="7.5" cy="7.5" r="6" stroke="#1a1a1a" strokeWidth="3"/>
+                    <line x1="12" y1="12" x2="16.5" y2="16.5" stroke="#1a1a1a" strokeWidth="3" strokeLinecap="round"/>
                   </svg>
                 </button>
               )}
@@ -104,18 +130,46 @@ export default function Header() {
           <button
             onClick={toggle}
             disabled={isTranslating}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-150 shrink-0
-              ${isZh
-                ? 'bg-gray-900 text-white'
-                : 'text-gray-400 hover:text-gray-600 border border-gray-200 hover:border-gray-300'}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              height: '46px',
+              padding: '0 18px',
+              border: '3.5px solid #1a1a1a',
+              borderRadius: '10px',
+              backgroundColor: isZh ? '#1a1a1a' : '#ffffff',
+              fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
+              fontSize: '14px',
+              fontWeight: 900,
+              color: isZh ? '#ffffff' : '#1a1a1a',
+              cursor: 'pointer',
+              letterSpacing: '1px',
+              filter: 'drop-shadow(3px 4px 0px #c0c0c0)',
+              boxSizing: 'border-box',
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}
           >
             {isTranslating ? (
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 border border-current border-t-transparent rounded-full animate-spin" />
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '12px', height: '12px', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
                 翻译中
               </span>
             ) : (
-              '中文'
+              <>
+                <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+                  <circle cx="14" cy="14" r="11" fill="#c0c0c0" transform="translate(1.5,2)"/>
+                  <circle cx="14" cy="14" r="11" fill="#ffffff"/>
+                  <circle cx="14" cy="14" r="11" fill="none" stroke="#1a1a1a" strokeWidth="2.5"/>
+                  <ellipse cx="14" cy="14" rx="4.8" ry="11" fill="none" stroke="#1a1a1a" strokeWidth="1.8"/>
+                  <line x1="3" y1="14" x2="25" y2="14" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M4 9.5 Q14 7 24 9.5" fill="none" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M4 18.5 Q14 21 24 18.5" fill="none" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+                中文
+              </>
             )}
           </button>
         </div>
