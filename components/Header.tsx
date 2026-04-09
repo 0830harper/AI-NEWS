@@ -73,9 +73,9 @@ export default function Header() {
                 position: 'relative',
                 display: 'inline-flex',
                 alignItems: 'center',
-                width: '280px',
-                height: '46px',
-                border: '3.5px solid #1a1a1a',
+                width: '220px',
+                height: '34px',
+                border: '2.5px solid #1a1a1a',
                 borderRadius: '10px',
                 background: '#ffffff',
                 filter: 'drop-shadow(3px 4px 0px #c0c0c0)',
@@ -93,8 +93,8 @@ export default function Header() {
                   height: '100%',
                   border: 'none',
                   background: 'transparent',
-                  padding: '0 42px 0 14px',
-                  fontSize: '13px',
+                  padding: '0 36px 0 12px',
+                  fontSize: '12px',
                   color: '#1a1a1a',
                   outline: 'none',
                   borderRadius: '10px',
@@ -135,13 +135,13 @@ export default function Header() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              height: '46px',
-              padding: '0 18px',
-              border: '3.5px solid #1a1a1a',
+              height: '34px',
+              padding: '0 12px',
+              border: '2.5px solid #1a1a1a',
               borderRadius: '10px',
               backgroundColor: isZh ? '#1a1a1a' : '#ffffff',
               fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: 900,
               color: isZh ? '#ffffff' : '#1a1a1a',
               cursor: 'pointer',
@@ -159,7 +159,7 @@ export default function Header() {
               </span>
             ) : (
               <>
-                <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+                <svg width="16" height="16" viewBox="0 0 28 28" fill="none">
                   <circle cx="14" cy="14" r="11" fill="#c0c0c0" transform="translate(1.5,2)"/>
                   <circle cx="14" cy="14" r="11" fill="#ffffff"/>
                   <circle cx="14" cy="14" r="11" fill="none" stroke="#1a1a1a" strokeWidth="2.5"/>
