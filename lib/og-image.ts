@@ -1,7 +1,44 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 
+// 这些域名有 bot 检测或 JS 渲染，axios 抓不到 og:image，改用 microlink API
+const MICROLINK_DOMAINS = [
+  'arxiv.org',
+  'huggingface.co',
+  'producthunt.com',
+  'github.com',
+  'papers.cool',
+]
+
+function needsMicrolink(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.replace('www.', '')
+    return MICROLINK_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d))
+  } catch {
+    return false
+  }
+}
+
+async function extractOgImageViaMicrolink(url: string): Promise<string | null> {
+  try {
+    const res = await axios.get('https://api.microlink.io', {
+      params: { url, screenshot: false },
+      timeout: 8000,
+    })
+    const data = res.data?.data
+    const img = data?.image?.url || data?.logo?.url || null
+    if (!img || img.startsWith('data:') || img.length < 10) return null
+    return img
+  } catch {
+    return null
+  }
+}
+
 export async function extractOgImage(url: string): Promise<string | null> {
+  if (needsMicrolink(url)) {
+    return extractOgImageViaMicrolink(url)
+  }
+
   try {
     const { data } = await axios.get(url, {
       headers: {
@@ -20,7 +57,6 @@ export async function extractOgImage(url: string): Promise<string | null> {
       $('meta[itemprop="image"]').attr('content') ||
       null
     )
-    // 过滤掉明显无效的图片（base64、svg、极短路径）
     if (!img || img.startsWith('data:') || img.length < 10) return null
     return img
   } catch {
