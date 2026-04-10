@@ -428,12 +428,8 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
 
 /** Normalize a title for deduplication: lowercase, strip punctuation, collapse spaces, first 80 chars */
 function normalizeTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\u4e00-\u9fff\s]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 80)
+  // Only strip extra whitespace and lowercase — exact same title = duplicate
+  return title.trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
 export async function fetchByCategory(category: string) {
