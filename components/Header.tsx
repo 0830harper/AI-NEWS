@@ -134,22 +134,18 @@ export default function Header() {
           <button
             onClick={toggle}
             disabled={isTranslating}
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'none', border: 'none', padding: 0, opacity: isTranslating ? 0.6 : 1, transition: 'opacity 0.15s' }}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'none', border: 'none', padding: 0, opacity: isTranslating ? 0.6 : 1, transition: 'opacity 0.15s', filter: 'drop-shadow(3px 4px 0px var(--translate-shadow))' }}
           >
-            <svg width="64" height="34" viewBox="0 0 74 54" fill="none">
-              <rect x="2" y="4" width="69" height="46" rx="10" fill="var(--translate-shadow)" transform="translate(3,4)"/>
-              <rect x="2" y="4" width="69" height="46" rx="10" fill={isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)'}/>
-              <rect x="2" y="4" width="69" height="46" rx="10" fill="none" stroke="var(--translate-border)" strokeWidth="3.5"/>
-              <circle cx="22" cy="27" r="10" fill="var(--translate-shadow)" transform="translate(1,1.5)"/>
-              <circle cx="22" cy="27" r="10" fill={isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)'}/>
-              <circle cx="22" cy="27" r="10" fill="none" stroke="var(--translate-border)" strokeWidth="2.2"/>
-              <ellipse cx="22" cy="27" rx="4.2" ry="10" fill="none" stroke="var(--translate-border)" strokeWidth="1.6"/>
-              <line x1="12" y1="27" x2="32" y2="27" stroke="var(--translate-border)" strokeWidth="1.6" strokeLinecap="round"/>
-              <path d="M13 22.5 Q22 20.5 31 22.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.6" strokeLinecap="round"/>
-              <path d="M13 31.5 Q22 33.5 31 31.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.6" strokeLinecap="round"/>
-              <text x="50" y="27" textAnchor="middle" dominantBaseline="central"
+            <svg width="70" height="34" viewBox="0 0 70 34" fill="none">
+              <rect x="1.25" y="1.25" width="67.5" height="31.5" rx="9" fill={isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)'} stroke="var(--translate-border)" strokeWidth="2.5"/>
+              <circle cx="20" cy="17" r="10" fill={isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)'} stroke="var(--translate-border)" strokeWidth="2"/>
+              <ellipse cx="20" cy="17" rx="4" ry="10" fill="none" stroke="var(--translate-border)" strokeWidth="1.5"/>
+              <line x1="10" y1="17" x2="30" y2="17" stroke="var(--translate-border)" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M11 12.5 Q20 10.5 29 12.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M11 21.5 Q20 23.5 29 21.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.5" strokeLinecap="round"/>
+              <text x="49" y="17" textAnchor="middle" dominantBaseline="central"
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
-                fontSize="13" fontWeight="900" fill={isZh ? 'var(--translate-active-text)' : 'var(--translate-text)'} letterSpacing="0.5">
+                fontSize="12" fontWeight="900" fill={isZh ? 'var(--translate-active-text)' : 'var(--translate-text)'} letterSpacing="0.5">
                 {isTranslating ? '…' : '中文'}
               </text>
             </svg>
