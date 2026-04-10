@@ -445,8 +445,8 @@ export async function fetchByCategory(category: string) {
 
   if (!sources) return
 
-  // Build dedup set from articles published in the last 7 days
-  const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
+  // Build dedup set from articles published in the last 2 days
+  const since = new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString()
   const { data: recentArticles } = await (supabaseAdmin as any)
     .from('articles')
     .select('title')
@@ -454,6 +454,7 @@ export async function fetchByCategory(category: string) {
   const existingTitles = new Set<string>(
     (recentArticles || []).map((a: any) => normalizeTitle(a.title))
   )
+  console.log(`  Dedup set: ${existingTitles.size} titles from last 2 days`)
 
   for (const source of sources) {
     const fetcher = FETCHER_MAP[source.slug]
