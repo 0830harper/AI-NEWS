@@ -8,6 +8,7 @@ const MICROLINK_DOMAINS = [
   'producthunt.com',
   'github.com',
   'papers.cool',
+  'qbitai.com',
 ]
 
 function needsMicrolink(url: string): boolean {
