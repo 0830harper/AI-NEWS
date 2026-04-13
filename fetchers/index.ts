@@ -225,10 +225,10 @@ async function enrichWithOgImages(articles: FetchedArticle[]): Promise<void> {
     })
   }
 
-  // 如果超过一半文章共用同一张图，说明是网站 logo，清除掉
+  // 如果 80% 以上文章共用同一张图，说明是网站 logo，清除掉
   const thumbCount: Record<string, number> = {}
   articles.forEach((a) => { if (a.thumbnail) thumbCount[a.thumbnail] = (thumbCount[a.thumbnail] || 0) + 1 })
-  const threshold = Math.ceil(articles.length / 2)
+  const threshold = Math.max(3, Math.ceil(articles.length * 0.8))
   articles.forEach((a) => {
     if (a.thumbnail && thumbCount[a.thumbnail] >= threshold) {
       a.thumbnail = null
