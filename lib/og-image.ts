@@ -9,6 +9,23 @@ const MICROLINK_DOMAINS = [
   'github.com',
   'papers.cool',
   'qbitai.com',
+  // Medium & Medium custom domains
+  'medium.com',
+  'uxdesign.cc',
+  'uxplanet.org',
+  'towardsdatascience.com',
+  // Paywalled / bot-protected
+  'technologyreview.com',
+  'wired.com',
+  'theverge.com',
+  'wsj.com',
+  'bloomberg.com',
+  // JS-rendered
+  'figma.com',
+  'kaggle.com',
+  'openrouter.ai',
+  'mobbin.com',
+  'awwwards.com',
 ]
 
 function needsMicrolink(url: string): boolean {

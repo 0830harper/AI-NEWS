@@ -1,0 +1,40 @@
+name: Backfill Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Backfill articles from last N days'
+        required: false
+        default: '30'
+      limit:
+        description: 'Max number of articles to process'
+        required: false
+        default: '500'
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Write .env.local
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$SUPABASE_URL" > .env.local
+          printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_ANON_KEY" >> .env.local
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$SUPABASE_SERVICE_ROLE_KEY" >> .env.local
+
+      - name: Run image backfill
+        run: npx tsx --env-file=.env.local scripts/backfill-images.ts ${{ github.event.inputs.days || '30' }} ${{ github.event.inputs.limit || '500' }}
