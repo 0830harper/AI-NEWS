@@ -244,19 +244,8 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   'wired-ai':       () => new RssFetcher('https://www.wired.com/feed/category/artificial-intelligence/latest/rss').fetch(),
   'jiqizhixin':     () => new RssFetcher('https://www.jiqizhixin.com/rss').fetch(),
   'producthunt':    () => new RssFetcher('https://www.producthunt.com/feed').fetch(),
-  'radar-ai':       () => new GenericScraper('https://radarai.top/', {
-    listSelector: 'article, .post, .item',
-    titleSelector: 'h2, h3, .title',
-    linkSelector: 'a',
-    descSelector: 'p, .excerpt',
-    baseUrl: 'https://radarai.top',
-  }).fetch(),
-  'aitoday':        () => new GenericScraper('https://www.aitoday.io/', {
-    listSelector: 'article, .post',
-    titleSelector: 'h2, h3',
-    linkSelector: 'a',
-    descSelector: 'p',
-  }).fetch(),
+  // 'radar-ai': disabled — site returns 502
+  // 'aitoday':  disabled — site returns 429 (rate limited)
   'qbitai':         () => new RssFetcher('https://www.qbitai.com/feed').fetch(),
   'aibase':         () => new GenericScraper('https://www.aibase.cn/', {
     listSelector: '.article-item, article, .post',
@@ -390,7 +379,7 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
   }).fetch(),
 
   // TECH
-  'ainews':         () => new RssFetcher('https://www.artificialintelligence-news.com/feed/').fetch(),
+  'ainews':         () => new RssFetcher('https://the-decoder.com/feed/').fetch(),
   'mit-tech-review':() => new RssFetcher('https://www.technologyreview.com/topic/artificial-intelligence/feed').fetch(),
   'arstechnica':    () => new RssFetcher('https://feeds.arstechnica.com/arstechnica/index').fetch(),
   'venturebeat':    () => new RssFetcher('https://venturebeat.com/feed/').fetch(),
