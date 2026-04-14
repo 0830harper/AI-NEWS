@@ -32,7 +32,7 @@ export default function Header() {
       {/* Row 1: logo */}
       <div className="max-w-7xl mx-auto px-4 py-3">
         <Link href="/">
-          <Image src="/icons/logo.svg" alt="Signal Lab" width={200} height={38} priority />
+          <Image src="/icons/logo.svg" alt="Signal Lab" width={280} height={54} priority />
         </Link>
       </div>
 
