@@ -47,7 +47,7 @@ export default function Header() {
               <Link
                 key={cat.slug}
                 href={href}
-                className={`group flex items-center justify-center gap-1.5 ${cat.w} py-1.5 rounded-lg text-sm font-medium transition-all duration-150`}
+                className={`group flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150`}
                 style={isActive ? {
                   backgroundColor: 'var(--nav-active-bg)',
                   color: 'var(--nav-active-text)',
