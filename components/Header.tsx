@@ -31,7 +31,7 @@ export default function Header() {
     <header style={{ backgroundColor: 'var(--header-bg)', borderBottom: '1px solid var(--header-border)' }} className="sticky top-0 z-10">
       {/* Row 1: logo */}
       <div className="max-w-7xl mx-auto px-4 py-3">
-        <Link href="/">
+        <Link href="/" style={{ marginLeft: '-18px', display: 'inline-block' }}>
           <Image src="/icons/logo.svg" alt="Signal Lab" width={280} height={54} priority />
         </Link>
       </div>
