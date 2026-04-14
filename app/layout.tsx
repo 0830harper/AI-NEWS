@@ -8,7 +8,7 @@ import { TranslationProvider } from '../contexts/TranslationContext'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'AI NEWS',
+  title: 'Signal Lab',
   description: 'Curated AI & Design news from 40+ sources',
 }
 
