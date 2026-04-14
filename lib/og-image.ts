@@ -54,11 +54,10 @@ async function tryArxivCdnThumbnail(url: string): Promise<string | null> {
 }
 
 export async function extractOgImage(url: string): Promise<string | null> {
-  // Fast path: arXiv papers → HuggingFace CDN thumbnail (no API needed)
+  // arXiv: ONLY use HuggingFace CDN thumbnail — the arxiv page og:image is
+  // always the same generic logo, which we never want to show
   if (url.includes('arxiv.org')) {
-    const cdnThumb = await tryArxivCdnThumbnail(url)
-    if (cdnThumb) return cdnThumb
-    // arXiv pages are server-rendered, fall through to regular axios fetch
+    return tryArxivCdnThumbnail(url)
   }
 
   if (needsMicrolink(url)) {
