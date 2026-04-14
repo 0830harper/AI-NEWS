@@ -4,7 +4,6 @@
  * 用法: npx ts-node -r tsconfig-paths/register scripts/backfill-images.ts [days=30] [limit=500]
  */
 
-import '../lib/env'
 import { supabaseAdmin } from '../lib/supabase'
 import { extractOgImage } from '../lib/og-image'
 

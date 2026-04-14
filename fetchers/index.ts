@@ -225,12 +225,18 @@ async function enrichWithOgImages(articles: FetchedArticle[]): Promise<void> {
     })
   }
 
-  // 如果 80% 以上文章共用同一张图，说明是网站 logo，清除掉
+  // 如果同一张图被 5 篇以上文章共用（且占比 80%+），说明是网站 logo，清除掉
+  // 必须同时满足两个条件，避免小批量文章误删合法图片
   const thumbCount: Record<string, number> = {}
   articles.forEach((a) => { if (a.thumbnail) thumbCount[a.thumbnail] = (thumbCount[a.thumbnail] || 0) + 1 })
-  const threshold = Math.max(3, Math.ceil(articles.length * 0.8))
+  const minAbsolute = 5
+  const minRatio = 0.8
   articles.forEach((a) => {
-    if (a.thumbnail && thumbCount[a.thumbnail] >= threshold) {
+    if (
+      a.thumbnail &&
+      thumbCount[a.thumbnail] >= minAbsolute &&
+      thumbCount[a.thumbnail] >= Math.ceil(articles.length * minRatio)
+    ) {
       a.thumbnail = null
     }
   })
