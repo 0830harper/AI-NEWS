@@ -1,31 +1,17 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 
-// 这些域名有 bot 检测或 JS 渲染，axios 抓不到 og:image，改用 microlink API
+// 只保留真正需要 microlink 的 JS 渲染 / bot 防护站点
+// microlink 免费版每月仅约 100 次请求，要节省使用
 const MICROLINK_DOMAINS = [
-  'arxiv.org',
-  'huggingface.co',
   'producthunt.com',
-  'github.com',
-  'papers.cool',
-  'qbitai.com',
-  // Medium & Medium custom domains
-  'medium.com',
-  'uxdesign.cc',
-  'uxplanet.org',
-  'towardsdatascience.com',
-  // Paywalled / bot-protected
-  'technologyreview.com',
-  'wired.com',
-  'theverge.com',
-  'wsj.com',
-  'bloomberg.com',
-  // JS-rendered
   'figma.com',
   'kaggle.com',
   'openrouter.ai',
   'mobbin.com',
   'awwwards.com',
+  'wsj.com',
+  'bloomberg.com',
 ]
 
 function needsMicrolink(url: string): boolean {
@@ -52,7 +38,29 @@ async function extractOgImageViaMicrolink(url: string): Promise<string | null> {
   }
 }
 
+/**
+ * arXiv papers: try HuggingFace paper thumbnail CDN (no API key, no rate limit).
+ * Returns the CDN URL if the paper exists there, otherwise null.
+ */
+async function tryArxivCdnThumbnail(url: string): Promise<string | null> {
+  const match = url.match(/arxiv\.org\/(?:abs|pdf)\/([\d.]+v?\d*)/)
+  if (!match) return null
+  const cdnUrl = `https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/${match[1]}/gradient.png`
+  try {
+    const res = await axios.head(cdnUrl, { timeout: 3000 })
+    if (res.status === 200) return cdnUrl
+  } catch { /* paper not on HuggingFace, fall through */ }
+  return null
+}
+
 export async function extractOgImage(url: string): Promise<string | null> {
+  // Fast path: arXiv papers → HuggingFace CDN thumbnail (no API needed)
+  if (url.includes('arxiv.org')) {
+    const cdnThumb = await tryArxivCdnThumbnail(url)
+    if (cdnThumb) return cdnThumb
+    // arXiv pages are server-rendered, fall through to regular axios fetch
+  }
+
   if (needsMicrolink(url)) {
     return extractOgImageViaMicrolink(url)
   }
@@ -63,8 +71,9 @@ export async function extractOgImage(url: string): Promise<string | null> {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
+        'Cache-Control': 'no-cache',
       },
-      timeout: 5000,
+      timeout: 6000,
     })
     const $ = cheerio.load(data)
     const img = (

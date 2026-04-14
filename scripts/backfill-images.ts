@@ -7,7 +7,7 @@
 import { supabaseAdmin } from '../lib/supabase'
 import { extractOgImage } from '../lib/og-image'
 
-const CONCURRENCY = 8
+const CONCURRENCY = 12
 const DAYS = parseInt(process.argv[2] ?? '30', 10)
 const LIMIT = parseInt(process.argv[3] ?? '500', 10)
 
@@ -71,8 +71,8 @@ async function main() {
     const progress = Math.min(i + CONCURRENCY, articles.length)
     console.log(`Progress: ${progress}/${articles.length} — updated: ${updated}`)
 
-    // 每批之间等一下，避免 microlink rate limit
-    if (i + CONCURRENCY < articles.length) await sleep(500)
+    // 小延迟避免对同一站点并发过多
+    if (i + CONCURRENCY < articles.length) await sleep(200)
   }
 
   console.log(`\n✅ Done. Updated: ${updated} / ${articles.length} articles`)

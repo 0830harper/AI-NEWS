@@ -20,13 +20,21 @@ export class HuggingFaceFetcher extends BaseFetcher {
       const desc = this.cleanText($(el).find('p').first().text())
       const upvotes = parseInt($(el).find('[data-upvotes]').attr('data-upvotes') || '0')
 
+      // HuggingFace paper thumbnails follow a predictable CDN pattern
+      // e.g. /papers/2504.02782 → cdn-thumbnails.huggingface.co/social-thumbnails/papers/2504.02782/gradient.png
+      let thumbnail: string | null = null
+      const paperIdMatch = href.match(/\/papers\/([\d.]+v?\d*)/)
+      if (paperIdMatch) {
+        thumbnail = `https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/${paperIdMatch[1]}/gradient.png`
+      }
+
       if (title && url) {
         results.push({
           title,
           description: desc || null,
           url,
           author: null,
-          thumbnail: null,
+          thumbnail,
           published_at: new Date(),
           raw_score: upvotes,
           tags: ['ai', 'paper'],
