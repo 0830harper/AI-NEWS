@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useCallback, useRef } from 'react'
 import { Article } from '../types'
+import { articleNeedsClientTranslate } from '../lib/article-needs-client-translate'
 
 type Translations = Record<number, { title: string; description: string | null }>
 
@@ -16,49 +17,72 @@ const TranslationContext = createContext<TranslationContextType | null>(null)
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
   const [isZh, setIsZh] = useState(false)
   const [translations, setTranslations] = useState<Translations>({})
-  // Only IDs that were *successfully* translated (title actually changed)
-  const doneIds = useRef<Set<number>>(new Set())
+  const inflight = useRef(false)
+  /** IDs where API returned 200 but text unchanged — avoid infinite retry loops */
+  const skipIds = useRef<Set<number>>(new Set())
 
-  const translateArticles = useCallback(async (articles: Article[]) => {
-    const toTranslate = articles.filter(
-      a => !doneIds.current.has(a.id) && !a.title_zh?.trim()
-    )
-    if (!toTranslate.length) return
+  const translateArticles = useCallback(
+    async (articles: Article[]) => {
+      const toTranslate = articles.filter(
+        a =>
+          !skipIds.current.has(a.id) &&
+          articleNeedsClientTranslate(a, translations[a.id])
+      )
+      if (!toTranslate.length) return
+      if (inflight.current) return
+      inflight.current = true
 
-    // Build a lookup of original titles to detect failed translations
-    const originals = new Map(toTranslate.map(a => [a.id, a.title]))
+      const originals = new Map(toTranslate.map(a => [a.id, a.title]))
+      const originalsDesc = new Map(toTranslate.map(a => [a.id, a.description]))
 
-    try {
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          articles: toTranslate.map(a => ({
-            id: a.id,
-            title: a.title,
-            description: a.description,
-          })),
-        }),
-      })
-      if (!res.ok) return
-      const data = await res.json()
-      const newTranslations: Translations = {}
+      try {
+        const res = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            articles: toTranslate.map(a => ({
+              id: a.id,
+              title: a.title,
+              description: a.description,
+            })),
+          }),
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        const newTranslations: Translations = {}
+        const rows = (data.translations || []) as {
+          id: number
+          title: string
+          description: string | null
+        }[]
 
-      for (const item of (data.translations || [])) {
-        const originalTitle = originals.get(item.id)
-        // Only store if the title actually changed — if it's identical to the
-        // original, the translation failed silently; don't mark as done so
-        // the next toggle will retry it.
-        if (item.title && originalTitle && item.title !== originalTitle) {
-          newTranslations[item.id] = { title: item.title, description: item.description }
-          doneIds.current.add(item.id)
+        for (const item of rows) {
+          const originalTitle = originals.get(item.id)
+          const originalDesc = originalsDesc.get(item.id)
+          if (!item.title || originalTitle === undefined) continue
+          const titleChanged = item.title !== originalTitle
+          const descChanged =
+            item.description !== undefined && item.description !== originalDesc
+          if (titleChanged || descChanged) {
+            newTranslations[item.id] = {
+              title: item.title,
+              description: item.description,
+            }
+          } else {
+            skipIds.current.add(item.id)
+          }
         }
+        if (Object.keys(newTranslations).length) {
+          setTranslations(prev => ({ ...prev, ...newTranslations }))
+        }
+      } catch {
+        // Network / parse error — retry on next effect / toggle
+      } finally {
+        inflight.current = false
       }
-      setTranslations(prev => ({ ...prev, ...newTranslations }))
-    } catch {
-      // Network / parse error — no articles marked done, all will retry next time
-    }
-  }, [])
+    },
+    [translations]
+  )
 
   const toggle = useCallback(() => setIsZh(v => !v), [])
 

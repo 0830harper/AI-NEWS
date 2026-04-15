@@ -4,17 +4,24 @@ import { Article } from '../types'
 import { formatDate } from '../lib/utils'
 import { isLightColor } from '../lib/colors'
 import { useTranslation } from '../contexts/TranslationContext'
+import { ui } from '../lib/ui-i18n'
 
 interface Props {
   article: Article
   showCategory?: boolean
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
+const CATEGORY_LABELS_EN: Record<string, string> = {
   app: 'Tool',
   design: 'Visual',
   uxui: 'UX / UI',
   tech: 'Tech',
+}
+const CATEGORY_LABELS_ZH: Record<string, string> = {
+  app: '工具',
+  design: '视觉',
+  uxui: 'UX / UI',
+  tech: '科技',
 }
 
 const DESC_LIMIT = 100
@@ -46,17 +53,28 @@ function trimDesc(raw: string): string {
 export default function ArticleCard({ article, showCategory = false }: Props) {
   const [imgReady, setImgReady] = useState(false)
   const { isZh, translations } = useTranslation()
+  const tUi = ui(isZh)
   const translated = translations[article.id]
   const title = isZh
     ? (article.title_zh || translated?.title || article.title)
     : article.title
-  const description = isZh
-    ? (article.description_zh ?? translated?.description ?? article.description)
-    : article.description
-  const sourceName = article.sources?.name || 'Unknown'
-  const sourceDate = formatDate(article.published_at)
+  const hasZhTitle = Boolean(
+    isZh && (article.title_zh?.trim() || translated?.title)
+  )
+  const description = (() => {
+    if (!isZh) return article.description
+    const zhDesc = article.description_zh ?? translated?.description
+    if (zhDesc !== undefined && zhDesc !== null && String(zhDesc).trim() !== '')
+      return zhDesc
+    if (hasZhTitle) return null
+    return article.description
+  })()
+  const sourceName = article.sources?.name || tUi.unknownSource
+  const sourceDate = formatDate(article.published_at, isZh ? 'zh-CN' : 'en-US')
   const category = article.sources?.category
-  const categoryLabel = category ? CATEGORY_LABELS[category] : null
+  const categoryLabel = category
+    ? (isZh ? CATEGORY_LABELS_ZH[category] : CATEGORY_LABELS_EN[category]) ?? null
+    : null
   const lightBg = isLightColor(article.card_color || '#4D96FF')
 
   useEffect(() => {

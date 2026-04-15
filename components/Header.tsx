@@ -4,13 +4,14 @@ import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useState, useRef } from 'react'
 import { useTranslation } from '../contexts/TranslationContext'
+import { ui } from '../lib/ui-i18n'
 
 const categories = [
-  { slug: '',        label: 'Pick',   icon: '/icons/pick.svg',   size: 32, w: 'w-24' },
-  { slug: 'app',    label: 'Tool',   icon: '/icons/tool.svg',   size: 36, w: 'w-24' },
-  { slug: 'design', label: 'Visual', icon: '/icons/visual.svg', size: 42, w: 'w-28' },
-  { slug: 'uxui',   label: 'UX / UI',icon: '/icons/uxui.svg',   size: 38, w: 'w-28' },
-  { slug: 'tech',   label: 'Tech',   icon: '/icons/tech.svg',   size: 38, w: 'w-24' },
+  { slug: '',        labelKey: 'navPick' as const,   icon: '/icons/pick.svg',   size: 32, w: 'w-24' },
+  { slug: 'app',    labelKey: 'navTool' as const,   icon: '/icons/tool.svg',   size: 36, w: 'w-24' },
+  { slug: 'design', labelKey: 'navVisual' as const, icon: '/icons/visual.svg', size: 42, w: 'w-28' },
+  { slug: 'uxui',   labelKey: 'navUxui' as const,   icon: '/icons/uxui.svg',   size: 38, w: 'w-28' },
+  { slug: 'tech',   labelKey: 'navTech' as const,   icon: '/icons/tech.svg',   size: 38, w: 'w-24' },
 ]
 
 export default function Header() {
@@ -19,6 +20,7 @@ export default function Header() {
   const [searchInput, setSearchInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const { isZh, toggle } = useTranslation()
+  const t = ui(isZh)
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,6 +45,7 @@ export default function Header() {
           {categories.map((cat) => {
             const href = cat.slug ? `/${cat.slug}` : '/'
             const isActive = pathname === href
+            const label = t[cat.labelKey]
             return (
               <Link
                 key={cat.slug}
@@ -58,12 +61,12 @@ export default function Header() {
               >
                 <Image
                   src={cat.icon}
-                  alt={cat.label}
+                  alt={label}
                   width={cat.size}
                   height={cat.size}
                   className="shrink-0 transition-transform duration-150 group-hover:scale-110"
                 />
-                <span className={isActive ? 'inline' : 'hidden sm:inline'}>{cat.label}</span>
+                <span className={isActive ? 'inline' : 'hidden sm:inline'}>{label}</span>
               </Link>
             )
           })}
@@ -91,7 +94,7 @@ export default function Header() {
                 type="text"
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
-                placeholder="Search articles…"
+                placeholder={t.searchPlaceholder}
                 style={{
                   width: '100%',
                   height: '100%',

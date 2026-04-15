@@ -1,33 +1,38 @@
+'use client'
 import { Source } from '../types'
+import { useTranslation } from '../contexts/TranslationContext'
+import {
+  ui,
+  fetchTypeLabel,
+  fetchStatusLabel,
+  sourceCategoryLabel,
+} from '../lib/ui-i18n'
 
 interface Props {
   sources: Source[]
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  ok:      'bg-green-100 text-green-700',
-  error:   'bg-red-100 text-red-600',
+  ok: 'bg-green-100 text-green-700',
+  error: 'bg-red-100 text-red-600',
   pending: 'bg-gray-100 text-gray-500',
 }
 
-const CATEGORY_LABEL: Record<string, string> = {
-  app:    'App',
-  design: 'Design / ART',
-  uxui:   'UX / UI',
-  tech:   'Tech',
-}
-
 export default function SourceStatusTable({ sources }: Props) {
+  const { isZh } = useTranslation()
+  const t = ui(isZh)
+  const dateLocale = isZh ? 'zh-CN' : 'en-US'
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
-            <th className="pb-3 pr-4 font-medium">Source</th>
-            <th className="pb-3 pr-4 font-medium">Category</th>
-            <th className="pb-3 pr-4 font-medium">Type</th>
-            <th className="pb-3 pr-4 font-medium">Status</th>
-            <th className="pb-3 font-medium">Last Fetched</th>
+            <th className="pb-3 pr-4 font-medium">{t.thSource}</th>
+            <th className="pb-3 pr-4 font-medium">{t.thCategory}</th>
+            <th className="pb-3 pr-4 font-medium">{t.thType}</th>
+            <th className="pb-3 pr-4 font-medium">{t.thStatus}</th>
+            <th className="pb-3 font-medium">{t.thLastFetched}</th>
           </tr>
         </thead>
         <tbody>
@@ -47,21 +52,30 @@ export default function SourceStatusTable({ sources }: Props) {
                 )}
               </td>
               <td className="py-3 pr-4 text-gray-500">
-                {CATEGORY_LABEL[s.category] || s.category}
+                {sourceCategoryLabel(s.category, isZh)}
               </td>
               <td className="py-3 pr-4">
                 <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                  {s.fetch_type}
+                  {fetchTypeLabel(s.fetch_type, isZh)}
                 </span>
               </td>
               <td className="py-3 pr-4">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[s.fetch_status] || STATUS_COLOR.pending}`}>
-                  {s.fetch_status}
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    STATUS_COLOR[s.fetch_status] || STATUS_COLOR.pending
+                  }`}
+                >
+                  {fetchStatusLabel(s.fetch_status, isZh)}
                 </span>
               </td>
               <td className="py-3 text-gray-400 text-xs">
                 {s.last_fetched_at
-                  ? new Date(s.last_fetched_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                  ? new Date(s.last_fetched_at).toLocaleString(dateLocale, {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
                   : '—'}
               </td>
             </tr>

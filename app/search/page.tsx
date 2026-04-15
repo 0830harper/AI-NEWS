@@ -4,11 +4,14 @@ import { useSearchParams } from 'next/navigation'
 import MasonryGrid from '../../components/MasonryGrid'
 import { Article } from '../../types'
 import { useTranslation } from '../../contexts/TranslationContext'
+import { articleNeedsClientTranslate } from '../../lib/article-needs-client-translate'
+import { ui, searchResultLine } from '../../lib/ui-i18n'
 
 function SearchContent() {
   const searchParams = useSearchParams()
   const q = searchParams.get('q') || ''
-  const { isZh, translateArticles } = useTranslation()
+  const { isZh, translateArticles, translations } = useTranslation()
+  const t = ui(isZh)
 
   const [articles, setArticles] = useState<Article[]>([])
   const [total, setTotal] = useState<number | null>(null)
@@ -43,18 +46,17 @@ function SearchContent() {
 
   useEffect(() => {
     if (!isZh || articles.length === 0) return
-    if (!articles.some(a => !a.title_zh?.trim())) return
+    if (!articles.some(a => articleNeedsClientTranslate(a, translations[a.id])))
+      return
     void translateArticles(articles)
-  }, [isZh, articles, translateArticles])
+  }, [isZh, articles, translateArticles, translations])
 
   return (
     <div>
       {/* Results count */}
       {q && total !== null && !loading && (
-        <p className="text-sm font-semibold uppercase tracking-widest text-gray-600 mb-5">
-          {total === 0
-            ? `No results for "${q}"`
-            : `${total} result${total !== 1 ? 's' : ''} for "${q}"`}
+        <p className={`text-sm font-semibold text-gray-600 mb-5 ${isZh ? 'tracking-wide' : 'uppercase tracking-widest'}`}>
+          {searchResultLine(total, q, isZh)}
         </p>
       )}
 
@@ -74,7 +76,7 @@ function SearchContent() {
       {hasMore && !loading && (
         <div className="flex justify-center mt-10 mb-6">
           <button onClick={() => doSearch(q, page + 1)} className="transition-transform duration-150 hover:scale-105">
-            <img src="/icons/load-more.svg" alt="Load More" width={200} height={62} />
+            <img src="/icons/load-more.svg" alt={t.loadMoreAlt} width={200} height={62} />
           </button>
         </div>
       )}
@@ -83,20 +85,20 @@ function SearchContent() {
         <div className="flex justify-center mt-8">
           <span className="flex items-center gap-2 text-sm text-gray-500">
             <span className="w-3.5 h-3.5 border border-gray-400 border-t-transparent rounded-full animate-spin" />
-            Loading...
+            {t.loading}
           </span>
         </div>
       )}
 
       {/* Empty */}
       {!loading && q && total === 0 && (
-        <div className="text-center py-20 text-gray-400 text-sm">Try a different keyword.</div>
+        <div className="text-center py-20 text-gray-400 text-sm">{t.searchTryOther}</div>
       )}
 
       {/* No query */}
       {!q && !loading && (
         <div className="text-center py-20 text-gray-400 text-sm">
-          Type a keyword in the search bar above.
+          {t.searchHint}
         </div>
       )}
     </div>

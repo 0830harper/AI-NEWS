@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import ClientHtmlLang from '../components/ClientHtmlLang'
 import { TranslationProvider } from '../contexts/TranslationContext'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${inter.className} bg-gray-50 min-h-screen`}>
         <TranslationProvider>
+          <ClientHtmlLang />
           <Header />
           <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
             {children}

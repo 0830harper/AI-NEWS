@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from 'react'
 import MasonryGrid from './MasonryGrid'
 import { Article } from '../types'
 import { useTranslation } from '../contexts/TranslationContext'
+import { articleNeedsClientTranslate } from '../lib/article-needs-client-translate'
+import { ui } from '../lib/ui-i18n'
 
 interface Props {
   category: string
@@ -17,7 +19,8 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [hasMore, setHasMore] = useState(true)
-  const { isZh, translateArticles } = useTranslation()
+  const { isZh, translateArticles, translations } = useTranslation()
+  const t = ui(isZh)
 
   const fetchPage = useCallback(async (pageNum: number) => {
     setLoading(true)
@@ -49,12 +52,13 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     fetchPage(1)
   }, [category, fetchPage])
 
-  // Fallback: only call API for rows still missing title_zh (DB backfill covers most)
+  // 中：缺中文标题或缺中文摘要（相对英文摘要）时立刻请求 /api/translate 补上
   useEffect(() => {
     if (!isZh || articles.length === 0) return
-    if (!articles.some(a => !a.title_zh?.trim())) return
+    if (!articles.some(a => articleNeedsClientTranslate(a, translations[a.id])))
+      return
     void translateArticles(articles)
-  }, [isZh, articles, translateArticles])
+  }, [isZh, articles, translateArticles, translations])
 
   if (initialLoading) {
     return (
@@ -67,14 +71,17 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   if (articles.length === 0) {
     return (
       <div className="text-center py-24 text-gray-400 text-sm">
-        No articles yet. Run the fetcher to populate content.
+        {t.noArticles}
       </div>
     )
   }
 
   const handleLoadMore = async () => {
     const newArticles = await fetchPage(page + 1)
-    if (isZh && newArticles.some(a => !a.title_zh?.trim())) {
+    if (
+      isZh &&
+      newArticles.some(a => articleNeedsClientTranslate(a, translations[a.id]))
+    ) {
       void translateArticles(newArticles)
     }
   }
@@ -93,10 +100,10 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
             {loading ? (
               <span className="flex items-center gap-2 px-8 py-2.5 text-sm text-gray-500">
                 <span className="w-3.5 h-3.5 border border-gray-400 border-t-transparent rounded-full animate-spin" />
-                Loading...
+                {t.loading}
               </span>
             ) : (
-              <img src="/icons/load-more.svg" alt="Load More" width={200} height={62} />
+              <img src="/icons/load-more.svg" alt={t.loadMoreAlt} width={200} height={62} />
             )}
           </button>
         </div>
@@ -104,7 +111,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
       {!hasMore && articles.length > 0 && (
         <div className="text-center mt-10 mb-6 text-xs text-gray-400 tracking-widest uppercase">
-          You&apos;ve reached the end
+          {t.endOfFeed}
         </div>
       )}
     </div>

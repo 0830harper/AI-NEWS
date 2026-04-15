@@ -4,9 +4,9 @@ export function hashUrl(url: string): string {
   return crypto.createHash('sha256').update(url).digest('hex')
 }
 
-export function formatDate(dateStr: string): string {
+export function formatDate(dateStr: string, locale: 'en-US' | 'zh-CN' = 'en-US'): string {
   const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
 }
 
 export function truncate(str: string, maxLen: number): string {
