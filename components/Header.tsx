@@ -146,40 +146,38 @@ export default function Header() {
               transition: 'opacity 0.15s',
             }}
           >
-            <svg width="80" height="54" viewBox="0 0 80 54" fill="none">
+            <svg width="72" height="34" viewBox="0 0 72 34" fill="none">
               {/* Shadow */}
-              <rect x="5" y="8" width="76" height="42" rx="10" fill="var(--translate-shadow)"/>
+              <rect x="3" y="3" width="68" height="30" rx="9" fill="var(--translate-shadow)"/>
               {/* Base bg */}
-              <rect x="2" y="4" width="76" height="42" rx="10" fill="var(--translate-bg)"/>
+              <rect x="1" y="1" width="68" height="30" rx="9" fill="var(--translate-bg)"/>
               {/* Border */}
-              <rect x="2" y="4" width="76" height="42" rx="10" fill="none" stroke="var(--translate-border)" strokeWidth="3.5"/>
+              <rect x="1" y="1" width="68" height="30" rx="9" fill="none" stroke="var(--translate-border)" strokeWidth="2.5"/>
               {/* Active side fill */}
               {!isZh ? (
-                /* EN active → left black */
                 <>
-                  <rect x="2" y="4" width="38" height="42" rx="10" fill="var(--translate-active-bg)"/>
-                  <rect x="32" y="4" width="8" height="42" fill="var(--translate-active-bg)"/>
+                  <rect x="1" y="1" width="34" height="30" rx="9" fill="var(--translate-active-bg)"/>
+                  <rect x="27" y="1" width="7" height="30" fill="var(--translate-active-bg)"/>
                 </>
               ) : (
-                /* 中 active → right black */
                 <>
-                  <rect x="40" y="4" width="38" height="42" rx="10" fill="var(--translate-active-bg)"/>
-                  <rect x="40" y="4" width="8" height="42" fill="var(--translate-active-bg)"/>
+                  <rect x="35" y="1" width="34" height="30" rx="9" fill="var(--translate-active-bg)"/>
+                  <rect x="35" y="1" width="7" height="30" fill="var(--translate-active-bg)"/>
                 </>
               )}
               {/* Divider */}
-              <line x1="40" y1="4" x2="40" y2="46" stroke="var(--translate-border)" strokeWidth="2.5"/>
+              <line x1="35" y1="1" x2="35" y2="31" stroke="var(--translate-border)" strokeWidth="2"/>
               {/* EN label */}
-              <text x="21" y="25" textAnchor="middle" dominantBaseline="central"
+              <text x="18" y="16" textAnchor="middle" dominantBaseline="central"
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
-                fontSize="13" fontWeight="900"
+                fontSize="12" fontWeight="900"
                 fill={!isZh ? 'var(--translate-active-text)' : 'var(--translate-border)'}>
                 {isTranslating ? '…' : 'EN'}
               </text>
               {/* 中 label */}
-              <text x="59" y="25" textAnchor="middle" dominantBaseline="central"
+              <text x="53" y="16" textAnchor="middle" dominantBaseline="central"
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
-                fontSize="13" fontWeight="900"
+                fontSize="12" fontWeight="900"
                 fill={isZh ? 'var(--translate-active-text)' : 'var(--translate-border)'}>
                 中
               </text>
