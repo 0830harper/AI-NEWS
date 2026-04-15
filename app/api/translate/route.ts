@@ -1,42 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const CONCURRENCY = 8
+const BATCH_SIZE = 10        // articles per LLM call
+const MAX_CONCURRENT = 4     // parallel LLM calls at once
 
-async function translateOne(id: number, title: string, description: string | null) {
+interface ArticleInput {
+  id: number
+  title: string
+  description: string | null
+}
+
+/**
+ * Translate a batch of articles in a single LLM call using JSON format.
+ * Falling back to originals if parsing fails.
+ */
+async function translateBatch(articles: ArticleInput[]): Promise<ArticleInput[]> {
   const apiKey = process.env.SILICONFLOW_API_KEY
-  if (!apiKey) return { id, title, description }
+  if (!apiKey) return articles
 
-  const hasDesc = description && description.trim().length > 0
-  const content = hasDesc ? `标题：${title}\n描述：${description}` : `标题：${title}`
+  const input = articles.map(a => ({
+    id: a.id,
+    t: a.title,
+    d: a.description || null,
+  }))
 
   try {
     const res = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: 'Qwen/Qwen2.5-7B-Instruct',
         messages: [{
           role: 'user',
-          content: `请将以下内容翻译成简体中文，保持原意简洁，只输出翻译结果，格式与输入一致：\n\n${content}`,
+          content:
+            '将下列JSON数组中每项的"t"（标题）和"d"（描述）字段翻译为简体中文。' +
+            '保持JSON结构和id不变，直接输出JSON数组，不要任何其他文字：\n\n' +
+            JSON.stringify(input),
         }],
-        max_tokens: 300,
-        temperature: 0.2,
+        max_tokens: 2500,
+        temperature: 0,
       }),
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(25000),
     })
+
+    if (!res.ok) return articles
+
     const data = await res.json()
     const reply: string = data.choices?.[0]?.message?.content?.trim() || ''
 
-    const titleMatch = reply.match(/标题：(.+?)(?:\n|$)/)
-    const descMatch = reply.match(/描述：(.+?)(?:\n|$)/)
+    // Robustly extract JSON array from response
+    const jsonStart = reply.indexOf('[')
+    const jsonEnd = reply.lastIndexOf(']')
+    if (jsonStart === -1 || jsonEnd === -1) return articles
 
-    return {
-      id,
-      title: titleMatch?.[1]?.trim() || title,
-      description: hasDesc ? (descMatch?.[1]?.trim() || description) : description,
-    }
+    const parsed: { id: number; t: string; d: string | null }[] =
+      JSON.parse(reply.slice(jsonStart, jsonEnd + 1))
+    if (!Array.isArray(parsed)) return articles
+
+    const byId = new Map(parsed.map(item => [item.id, item]))
+    return articles.map(a => {
+      const tr = byId.get(a.id)
+      if (!tr) return a
+      return {
+        id: a.id,
+        title: tr.t?.trim() || a.title,
+        description: tr.d !== undefined ? (tr.d?.trim() || null) : a.description,
+      }
+    })
   } catch {
-    return { id, title, description }
+    return articles
   }
 }
 
@@ -46,16 +80,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ translations: [] })
   }
 
-  const translations: any[] = []
-  for (let i = 0; i < articles.length; i += CONCURRENCY) {
-    const batch = articles.slice(i, i + CONCURRENCY)
-    const results = await Promise.allSettled(
-      batch.map((a: any) => translateOne(a.id, a.title, a.description))
-    )
-    results.forEach((r, j) => {
-      translations.push(r.status === 'fulfilled' ? r.value : batch[j])
-    })
+  // Split into batches of BATCH_SIZE
+  const batches: ArticleInput[][] = []
+  for (let i = 0; i < articles.length; i += BATCH_SIZE) {
+    batches.push(articles.slice(i, i + BATCH_SIZE))
   }
 
-  return NextResponse.json({ translations })
+  // Run batches concurrently (up to MAX_CONCURRENT at a time)
+  const allTranslations: ArticleInput[] = []
+  for (let i = 0; i < batches.length; i += MAX_CONCURRENT) {
+    const chunk = batches.slice(i, i + MAX_CONCURRENT)
+    const results = await Promise.all(chunk.map(b => translateBatch(b)))
+    results.forEach(r => allTranslations.push(...r))
+  }
+
+  return NextResponse.json({ translations: allTranslations })
 }
