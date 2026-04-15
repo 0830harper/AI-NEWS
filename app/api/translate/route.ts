@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BATCH_SIZE = 10        // articles per LLM call
-const MAX_CONCURRENT = 4     // parallel LLM calls at once
+const BATCH_SIZE = 5         // articles per LLM call (smaller = fewer token-limit failures)
+const MAX_CONCURRENT = 6     // parallel LLM calls at once
 
 interface ArticleInput {
   id: number
@@ -39,7 +39,7 @@ async function translateBatch(articles: ArticleInput[]): Promise<ArticleInput[]>
             '保持JSON结构和id不变，直接输出JSON数组，不要任何其他文字：\n\n' +
             JSON.stringify(input),
         }],
-        max_tokens: 2500,
+        max_tokens: 1500,
         temperature: 0,
       }),
       signal: AbortSignal.timeout(25000),
