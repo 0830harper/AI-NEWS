@@ -17,19 +17,20 @@ export default function MasonryGrid({ articles, showCategory = false, cols = 3 }
     )
   }
 
-  // CSS columns: the browser measures actual rendered heights and balances
-  // column bottoms automatically — no JS estimation needed.
-  // Responsive: 1 col on mobile, 2 on tablet, 3 on desktop.
-  const colClass =
-    cols === 1 ? 'columns-1' :
-    cols === 2 ? 'columns-1 sm:columns-2' :
-                 'columns-1 sm:columns-2 lg:columns-3'
+  // Round-robin distribution preserves left-to-right reading order:
+  // article 0 → col 0, article 1 → col 1, article 2 → col 2, article 3 → col 0 …
+  const columns: Article[][] = Array.from({ length: cols }, () => [])
+  articles.forEach((article, i) => {
+    columns[i % cols].push(article)
+  })
 
   return (
-    <div className={`${colClass} gap-6 md:gap-8`}>
-      {articles.map(article => (
-        <div key={article.id} className="break-inside-avoid">
-          <ArticleCard article={article} showCategory={showCategory} />
+    <div className="flex gap-6 md:gap-8 items-start">
+      {columns.map((col, ci) => (
+        <div key={ci} className="flex-1 flex flex-col gap-6 md:gap-8">
+          {col.map(article => (
+            <ArticleCard key={article.id} article={article} showCategory={showCategory} />
+          ))}
         </div>
       ))}
     </div>
