@@ -10,6 +10,7 @@ import { GithubTrendingFetcher } from './scraper/github-trending'
 import { HuggingFaceFetcher } from './scraper/huggingface'
 import { GenericScraper } from './scraper/generic'
 import { FetchedArticle } from '../types'
+import { translateAndPersistArticleIds } from '../lib/translate-articles'
 
 // 并发限制
 const OG_CONCURRENCY = 20
@@ -181,7 +182,8 @@ async function enrichWithHnPoints(articles: FetchedArticle[]): Promise<void> {
 /** Insert or update an article, preserving published_at for existing rows.
  *  This prevents re-fetches from overwriting the original publication date
  *  with new Date() (which happens when the RSS feed has no pubDate). */
-async function saveArticle(sourceId: number, article: FetchedArticle, heatScore: number) {
+/** Returns new row id on insert, or null if updated existing / failed. */
+async function saveArticle(sourceId: number, article: FetchedArticle, heatScore: number): Promise<number | null> {
   const urlHash = hashUrl(article.url)
   const payload = {
     source_id: sourceId,
@@ -205,12 +207,21 @@ async function saveArticle(sourceId: number, article: FetchedArticle, heatScore:
 
   if (existing) {
     await (supabaseAdmin as any).from('articles').update(payload).eq('url_hash', urlHash)
-  } else {
-    await (supabaseAdmin as any).from('articles').insert({
+    return null
+  }
+  const { data: inserted, error } = await (supabaseAdmin as any)
+    .from('articles')
+    .insert({
       ...payload,
       published_at: article.published_at.toISOString(),
     })
+    .select('id')
+    .single()
+  if (error) {
+    console.error('saveArticle insert:', error.message)
+    return null
   }
+  return inserted?.id ?? null
 }
 
 /** Return true if the image URL looks like a site logo/icon rather than article content */
@@ -481,6 +492,7 @@ export async function fetchByCategory(category: string) {
 
       let saved = 0
       let dupes = 0
+      const newArticleIds: number[] = []
       for (const article of relevant) {
         if (!article.url || !article.title) continue
         const norm = normalizeTitle(article.title)
@@ -491,8 +503,15 @@ export async function fetchByCategory(category: string) {
         }
         existingTitles.add(norm)
         const heatScore = calcHeatScore(article.raw_score, article.published_at)
-        await saveArticle(source.id, article, heatScore)
+        const newId = await saveArticle(source.id, article, heatScore)
+        if (newId !== null) newArticleIds.push(newId)
         saved++
+      }
+
+      if (newArticleIds.length) {
+        await translateAndPersistArticleIds(newArticleIds).catch((e: Error) =>
+          console.error(`  translate persist (${source.name}):`, e.message)
+        )
       }
 
       await (supabaseAdmin as any)
@@ -541,11 +560,18 @@ export async function fetchAll() {
       // 用 HN Algolia 反查 points 作为热度
       await enrichWithHnPoints(articles)
 
-      // 写入数据库
+      const newArticleIds: number[] = []
       for (const article of articles) {
         if (!article.url || !article.title) continue
         const heatScore = calcHeatScore(article.raw_score, article.published_at)
-        await saveArticle(source.id, article, heatScore)
+        const newId = await saveArticle(source.id, article, heatScore)
+        if (newId !== null) newArticleIds.push(newId)
+      }
+
+      if (newArticleIds.length) {
+        await translateAndPersistArticleIds(newArticleIds).catch((e: Error) =>
+          console.error(`  translate persist (${source.name}):`, e.message)
+        )
       }
 
       // 更新来源状态

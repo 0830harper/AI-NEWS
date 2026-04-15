@@ -8,7 +8,7 @@ import { useTranslation } from '../../contexts/TranslationContext'
 function SearchContent() {
   const searchParams = useSearchParams()
   const q = searchParams.get('q') || ''
-  const { isZh } = useTranslation()
+  const { isZh, translateArticles } = useTranslation()
 
   const [articles, setArticles] = useState<Article[]>([])
   const [total, setTotal] = useState<number | null>(null)
@@ -20,7 +20,10 @@ function SearchContent() {
     if (!query.trim()) { setArticles([]); setTotal(null); return }
     setLoading(true)
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${pageNum}`)
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(query)}&page=${pageNum}`,
+        { cache: 'no-store' }
+      )
       const data = await res.json()
       const newArticles: Article[] = data.articles || []
       setArticles(prev => pageNum === 1 ? newArticles : [...prev, ...newArticles])
@@ -37,6 +40,12 @@ function SearchContent() {
     setPage(1)
     doSearch(q, 1)
   }, [q, doSearch])
+
+  useEffect(() => {
+    if (!isZh || articles.length === 0) return
+    if (!articles.some(a => !a.title_zh?.trim())) return
+    void translateArticles(articles)
+  }, [isZh, articles, translateArticles])
 
   return (
     <div>
@@ -58,7 +67,7 @@ function SearchContent() {
 
       {/* Results */}
       {articles.length > 0 && (
-        <MasonryGrid key={isZh ? 'zh' : 'en'} articles={articles} showCategory={true} />
+        <MasonryGrid articles={articles} showCategory={true} />
       )}
 
       {/* Load more */}

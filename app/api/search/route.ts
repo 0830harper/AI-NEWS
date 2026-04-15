@@ -8,8 +8,10 @@ export async function GET(req: NextRequest) {
   const limit = 40
   const offset = (page - 1) * limit
 
+  const noStore = { headers: { 'Cache-Control': 'private, no-store, max-age=0' } }
+
   if (!q || q.length < 1) {
-    return NextResponse.json({ articles: [], page, total: 0 })
+    return NextResponse.json({ articles: [], page, total: 0 }, noStore)
   }
 
   const pattern = `%${q}%`
@@ -24,5 +26,5 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json({ articles: data || [], page, total: count ?? 0 })
+  return NextResponse.json({ articles: data || [], page, total: count ?? 0 }, noStore)
 }

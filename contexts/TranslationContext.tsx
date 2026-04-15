@@ -9,7 +9,6 @@ interface TranslationContextType {
   toggle: () => void
   translations: Translations
   translateArticles: (articles: Article[]) => Promise<void>
-  isTranslating: boolean
 }
 
 const TranslationContext = createContext<TranslationContextType | null>(null)
@@ -17,18 +16,18 @@ const TranslationContext = createContext<TranslationContextType | null>(null)
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
   const [isZh, setIsZh] = useState(false)
   const [translations, setTranslations] = useState<Translations>({})
-  const [isTranslating, setIsTranslating] = useState(false)
   // Only IDs that were *successfully* translated (title actually changed)
   const doneIds = useRef<Set<number>>(new Set())
 
   const translateArticles = useCallback(async (articles: Article[]) => {
-    const toTranslate = articles.filter(a => !doneIds.current.has(a.id))
+    const toTranslate = articles.filter(
+      a => !doneIds.current.has(a.id) && !a.title_zh?.trim()
+    )
     if (!toTranslate.length) return
 
     // Build a lookup of original titles to detect failed translations
     const originals = new Map(toTranslate.map(a => [a.id, a.title]))
 
-    setIsTranslating(true)
     try {
       const res = await fetch('/api/translate', {
         method: 'POST',
@@ -58,15 +57,13 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       setTranslations(prev => ({ ...prev, ...newTranslations }))
     } catch {
       // Network / parse error — no articles marked done, all will retry next time
-    } finally {
-      setIsTranslating(false)
     }
   }, [])
 
   const toggle = useCallback(() => setIsZh(v => !v), [])
 
   return (
-    <TranslationContext.Provider value={{ isZh, toggle, translations, translateArticles, isTranslating }}>
+    <TranslationContext.Provider value={{ isZh, toggle, translations, translateArticles }}>
       {children}
     </TranslationContext.Provider>
   )

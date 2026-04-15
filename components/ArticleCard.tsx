@@ -47,8 +47,12 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
   const [imgReady, setImgReady] = useState(false)
   const { isZh, translations } = useTranslation()
   const translated = translations[article.id]
-  const title = (isZh && translated?.title) ? translated.title : article.title
-  const description = (isZh && translated?.description !== undefined) ? translated.description : article.description
+  const title = isZh
+    ? (article.title_zh || translated?.title || article.title)
+    : article.title
+  const description = isZh
+    ? (article.description_zh ?? translated?.description ?? article.description)
+    : article.description
   const sourceName = article.sources?.name || 'Unknown'
   const sourceDate = formatDate(article.published_at)
   const category = article.sources?.category

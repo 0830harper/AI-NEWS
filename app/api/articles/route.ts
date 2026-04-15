@@ -124,5 +124,8 @@ export async function GET(req: NextRequest) {
     ? weightedSort(cleaned, 10, 9999).slice(offset, offset + limit)
     : diversify(cleaned, MAX_PER_SOURCE).slice(0, limit)
 
-  return NextResponse.json({ articles: result, page, limit })
+  return NextResponse.json(
+    { articles: result, page, limit },
+    { headers: { 'Cache-Control': 'private, no-store, max-age=0' } }
+  )
 }

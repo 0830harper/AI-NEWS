@@ -3,6 +3,9 @@ export interface Article {
   source_id: number
   title: string
   description: string | null
+  /** Pre-translated 简体中文 (filled by fetcher pipeline) */
+  title_zh?: string | null
+  description_zh?: string | null
   url: string
   url_hash: string
   author: string | null

@@ -23,7 +23,8 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     setLoading(true)
     try {
       const res = await fetch(
-        `/api/articles?category=${category}&limit=${PAGE_SIZE}&page=${pageNum}`
+        `/api/articles?category=${category}&limit=${PAGE_SIZE}&page=${pageNum}`,
+        { cache: 'no-store' }
       )
       const data = await res.json()
       const newArticles: Article[] = data.articles || []
@@ -48,11 +49,11 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     fetchPage(1)
   }, [category, fetchPage])
 
-  // Translate when isZh toggles on
+  // Fallback: only call API for rows still missing title_zh (DB backfill covers most)
   useEffect(() => {
-    if (isZh && articles.length > 0) {
-      translateArticles(articles)
-    }
+    if (!isZh || articles.length === 0) return
+    if (!articles.some(a => !a.title_zh?.trim())) return
+    void translateArticles(articles)
   }, [isZh, articles, translateArticles])
 
   if (initialLoading) {
@@ -73,14 +74,14 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
   const handleLoadMore = async () => {
     const newArticles = await fetchPage(page + 1)
-    if (isZh && newArticles.length > 0) {
-      translateArticles(newArticles)
+    if (isZh && newArticles.some(a => !a.title_zh?.trim())) {
+      void translateArticles(newArticles)
     }
   }
 
   return (
     <div>
-      <MasonryGrid key={isZh ? 'zh' : 'en'} articles={articles} showCategory={showCategory} />
+      <MasonryGrid articles={articles} showCategory={showCategory} />
 
       {hasMore && (
         <div className="flex justify-center mt-10 mb-6">

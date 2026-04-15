@@ -18,7 +18,7 @@ export default function Header() {
   const router = useRouter()
   const [searchInput, setSearchInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const { isZh, toggle, isTranslating } = useTranslation()
+  const { isZh, toggle } = useTranslation()
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -132,8 +132,8 @@ export default function Header() {
 
           {/* EN / 中 toggle */}
           <button
+            type="button"
             onClick={toggle}
-            disabled={isTranslating}
             aria-label={isZh ? 'Switch to English' : 'Switch to Chinese'}
             style={{
               display: 'inline-flex',
@@ -141,9 +141,8 @@ export default function Header() {
               background: 'none',
               border: 'none',
               padding: 0,
-              cursor: isTranslating ? 'not-allowed' : 'pointer',
-              opacity: isTranslating ? 0.55 : 1,
-              transition: 'opacity 0.15s',
+              cursor: 'pointer',
+              opacity: 1,
             }}
           >
             <svg width="72" height="34" viewBox="0 0 72 34" fill="none">
@@ -172,7 +171,7 @@ export default function Header() {
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
                 fontSize="12" fontWeight="900"
                 fill={!isZh ? 'var(--translate-active-text)' : 'var(--translate-border)'}>
-                {isTranslating ? '…' : 'EN'}
+                EN
               </text>
               {/* 中 label */}
               <text x="53" y="16" textAnchor="middle" dominantBaseline="central"

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "backfill-zh": "tsx scripts/backfill-zh.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.2",
