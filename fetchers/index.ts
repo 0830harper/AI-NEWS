@@ -213,7 +213,25 @@ async function saveArticle(sourceId: number, article: FetchedArticle, heatScore:
   }
 }
 
+/** Return true if the image URL looks like a site logo/icon rather than article content */
+function isLogoUrl(imgUrl: string): boolean {
+  try {
+    const path = new URL(imgUrl).pathname.toLowerCase()
+    return (
+      /\/(favicon|logo|icon|brand|watermark|placeholder|default[-_]?(img|image|thumb)?)(\.|\/|-|_)/.test(path) ||
+      /([-_](logo|icon|favicon|brand))\.(png|jpg|jpeg|svg|webp|gif)$/.test(path)
+    )
+  } catch {
+    return false
+  }
+}
+
 async function enrichWithOgImages(articles: FetchedArticle[]): Promise<void> {
+  // First: strip logo/icon URLs that came directly from RSS feeds
+  articles.forEach((a) => {
+    if (a.thumbnail && isLogoUrl(a.thumbnail)) a.thumbnail = null
+  })
+
   const noImage = articles.filter((a) => !a.thumbnail && a.url)
   for (let i = 0; i < noImage.length; i += OG_CONCURRENCY) {
     const batch = noImage.slice(i, i + OG_CONCURRENCY)
@@ -225,12 +243,11 @@ async function enrichWithOgImages(articles: FetchedArticle[]): Promise<void> {
     })
   }
 
-  // 如果同一张图被 5 篇以上文章共用（且占比 80%+），说明是网站 logo，清除掉
-  // 必须同时满足两个条件，避免小批量文章误删合法图片
+  // 如果同一张图被 3 篇以上文章共用（且占比 60%+），说明是网站 logo，清除掉
   const thumbCount: Record<string, number> = {}
   articles.forEach((a) => { if (a.thumbnail) thumbCount[a.thumbnail] = (thumbCount[a.thumbnail] || 0) + 1 })
-  const minAbsolute = 5
-  const minRatio = 0.8
+  const minAbsolute = 3
+  const minRatio = 0.6
   articles.forEach((a) => {
     if (
       a.thumbnail &&

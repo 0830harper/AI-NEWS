@@ -53,6 +53,20 @@ async function tryArxivCdnThumbnail(url: string): Promise<string | null> {
   return null
 }
 
+/** Return true if the image URL looks like a site logo/icon rather than article content */
+function isLogoUrl(imgUrl: string): boolean {
+  try {
+    const path = new URL(imgUrl).pathname.toLowerCase()
+    return (
+      /\/(favicon|logo|icon|brand|watermark|placeholder|default[-_]?(img|image|thumb)?)(\.|\/|-|_)/.test(path) ||
+      /([-_](logo|icon|favicon|brand))\.(png|jpg|jpeg|svg|webp|gif)$/.test(path) ||
+      path.endsWith('qbitai_icon.png')
+    )
+  } catch {
+    return false
+  }
+}
+
 export async function extractOgImage(url: string): Promise<string | null> {
   // arXiv: ONLY use HuggingFace CDN thumbnail — the arxiv page og:image is
   // always the same generic logo, which we never want to show
@@ -84,6 +98,7 @@ export async function extractOgImage(url: string): Promise<string | null> {
       null
     )
     if (!img || img.startsWith('data:') || img.length < 10) return null
+    if (isLogoUrl(img)) return null
     return img
   } catch {
     return null
