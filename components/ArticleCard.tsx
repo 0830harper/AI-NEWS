@@ -4,6 +4,7 @@ import { Article } from '../types'
 import { formatDate } from '../lib/utils'
 import { isLightColor } from '../lib/colors'
 import { useTranslation } from '../contexts/TranslationContext'
+import { looksLikeChinese } from '../lib/article-needs-client-translate'
 import { ui } from '../lib/ui-i18n'
 
 interface Props {
@@ -55,17 +56,30 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
   const { isZh, translations } = useTranslation()
   const tUi = ui(isZh)
   const translated = translations[article.id]
+
+  const zhTitleFromDb = looksLikeChinese(article.title_zh) ? article.title_zh! : null
+  const zhTitleFromClient = looksLikeChinese(translated?.title) ? translated!.title : null
   const title = isZh
-    ? (article.title_zh || translated?.title || article.title)
+    ? (zhTitleFromDb || zhTitleFromClient || article.title)
     : article.title
-  const hasZhTitle = Boolean(
-    isZh && (article.title_zh?.trim() || translated?.title)
-  )
+  const hasZhTitle = isZh && Boolean(zhTitleFromDb || zhTitleFromClient)
+
+  const zhDescFromDb = (() => {
+    if (article.description_zh === null || article.description_zh === undefined) return null
+    const d = String(article.description_zh).trim()
+    if (d === '' || looksLikeChinese(d)) return article.description_zh
+    return null
+  })()
+  const zhDescFromClient = (() => {
+    if (translated?.description === null || translated?.description === undefined) return null
+    const d = String(translated.description).trim()
+    if (d === '' || looksLikeChinese(d)) return translated.description
+    return null
+  })()
   const description = (() => {
     if (!isZh) return article.description
-    const zhDesc = article.description_zh ?? translated?.description
-    if (zhDesc !== undefined && zhDesc !== null && String(zhDesc).trim() !== '')
-      return zhDesc
+    if (zhDescFromDb !== null) return zhDescFromDb
+    if (zhDescFromClient !== null) return zhDescFromClient
     if (hasZhTitle) return null
     return article.description
   })()
