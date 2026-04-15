@@ -130,23 +130,58 @@ export default function Header() {
             </div>
           </form>
 
-          {/* 中文 toggle */}
+          {/* EN / 中 toggle */}
           <button
             onClick={toggle}
             disabled={isTranslating}
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'none', border: 'none', padding: 0, opacity: isTranslating ? 0.6 : 1, transition: 'opacity 0.15s', filter: 'drop-shadow(3px 4px 0px var(--translate-shadow))' }}
+            aria-label={isZh ? 'Switch to English' : 'Switch to Chinese'}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: isTranslating ? 'not-allowed' : 'pointer',
+              opacity: isTranslating ? 0.55 : 1,
+              transition: 'opacity 0.15s',
+            }}
           >
-            <svg width="70" height="34" viewBox="0 0 70 34" fill="none">
-              <rect x="1.25" y="1.25" width="67.5" height="31.5" rx="9" fill={isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)'} stroke="var(--translate-border)" strokeWidth="2.5"/>
-              <circle cx="20" cy="17" r="10" fill={isZh ? 'var(--translate-active-bg)' : 'var(--translate-bg)'} stroke="var(--translate-border)" strokeWidth="2"/>
-              <ellipse cx="20" cy="17" rx="4" ry="10" fill="none" stroke="var(--translate-border)" strokeWidth="1.5"/>
-              <line x1="10" y1="17" x2="30" y2="17" stroke="var(--translate-border)" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M11 12.5 Q20 10.5 29 12.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M11 21.5 Q20 23.5 29 21.5" fill="none" stroke="var(--translate-border)" strokeWidth="1.5" strokeLinecap="round"/>
-              <text x="49" y="17" textAnchor="middle" dominantBaseline="central"
+            <svg width="80" height="54" viewBox="0 0 80 54" fill="none">
+              {/* Shadow */}
+              <rect x="5" y="8" width="76" height="42" rx="10" fill="var(--translate-shadow)"/>
+              {/* Base bg */}
+              <rect x="2" y="4" width="76" height="42" rx="10" fill="var(--translate-bg)"/>
+              {/* Border */}
+              <rect x="2" y="4" width="76" height="42" rx="10" fill="none" stroke="var(--translate-border)" strokeWidth="3.5"/>
+              {/* Active side fill */}
+              {!isZh ? (
+                /* EN active → left black */
+                <>
+                  <rect x="2" y="4" width="38" height="42" rx="10" fill="var(--translate-active-bg)"/>
+                  <rect x="32" y="4" width="8" height="42" fill="var(--translate-active-bg)"/>
+                </>
+              ) : (
+                /* 中 active → right black */
+                <>
+                  <rect x="40" y="4" width="38" height="42" rx="10" fill="var(--translate-active-bg)"/>
+                  <rect x="40" y="4" width="8" height="42" fill="var(--translate-active-bg)"/>
+                </>
+              )}
+              {/* Divider */}
+              <line x1="40" y1="4" x2="40" y2="46" stroke="var(--translate-border)" strokeWidth="2.5"/>
+              {/* EN label */}
+              <text x="21" y="25" textAnchor="middle" dominantBaseline="central"
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
-                fontSize="12" fontWeight="900" fill={isZh ? 'var(--translate-active-text)' : 'var(--translate-text)'} letterSpacing="0.5">
-                {isTranslating ? '…' : '中文'}
+                fontSize="13" fontWeight="900"
+                fill={!isZh ? 'var(--translate-active-text)' : 'var(--translate-border)'}>
+                {isTranslating ? '…' : 'EN'}
+              </text>
+              {/* 中 label */}
+              <text x="59" y="25" textAnchor="middle" dominantBaseline="central"
+                fontFamily="'Arial Black','Helvetica Neue',sans-serif"
+                fontSize="13" fontWeight="900"
+                fill={isZh ? 'var(--translate-active-text)' : 'var(--translate-border)'}>
+                中
               </text>
             </svg>
           </button>
