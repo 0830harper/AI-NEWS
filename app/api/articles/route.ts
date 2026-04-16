@@ -29,13 +29,11 @@ function diversify(articles: any[], maxPerSource: number): any[] {
  *  then sort all articles by final score descending.
  *  Trims the result to a full multiple of COLS so the last row is always complete. */
 function weightedSort(articles: any[], maxPerSource: number, limit: number): any[] {
-  // Find max raw_score per source
   const sourceMax: Record<number, number> = {}
   for (const a of articles) {
     sourceMax[a.source_id] = Math.max(sourceMax[a.source_id] ?? 0, a.raw_score ?? 0)
   }
   const now = Date.now()
-  // Attach weighted_score = normalised(0–100) × time_decay, cap per source
   const sourceCount: Record<number, number> = {}
   const scored = articles
     .map(a => {
@@ -43,14 +41,15 @@ function weightedSort(articles: any[], maxPerSource: number, limit: number): any
         ? (a.raw_score / sourceMax[a.source_id]) * 100
         : 0
       const ageDays = Math.max(0, (now - new Date(a.published_at).getTime()) / 86_400_000)
-      const timeFactor = Math.pow(0.5, ageDays / 3) // half-life 3 days (was 7)
+      const timeFactor = Math.pow(0.5, ageDays / 3)
       const freshMultiplier = ageDays < 1 ? 1.8 : ageDays < 2 ? 1.4 : ageDays < 3 ? 1.1 : 1.0
-      const imageBoost = a.thumbnail ? 1.3 : 1.0
-      const ws = normalised > 0 ? Math.max(1, Math.round(normalised * timeFactor * freshMultiplier * imageBoost)) : 0
-      return {
-        ...a,
-        weighted_score: ws,
-      }
+
+      // Articles without HN score still get a base score so they can appear in Pick
+      const base = normalised > 0 ? normalised : 15
+      const imageBoost = a.thumbnail ? 1.6 : 1.0
+
+      const ws = Math.max(1, Math.round(base * timeFactor * freshMultiplier * imageBoost))
+      return { ...a, weighted_score: ws }
     })
     .filter(a => {
       sourceCount[a.source_id] = (sourceCount[a.source_id] ?? 0) + 1
@@ -93,14 +92,11 @@ export async function GET(req: NextRequest) {
     .order(isLatest ? 'raw_score' : 'published_at', { ascending: false })
     .neq('ai_category', 'irrelevant')  // 全局排除 irrelevant，任何页面都不显示
 
-  // 只有 Pick 区才加时间过滤
   if (isLatest) {
-    // 拉取全部候选文章（30天内有 HN points 的），排序后再分页
-    // 避免分页窗口重叠导致重复文章
+    // Pick: all non-irrelevant articles from last 30 days, scored + sorted in JS
     query = query
       .gte('published_at', pickCutoff)
-      .gt('raw_score', 0)
-      .range(0, 999)  // 最多取 1000 篇候选，足够覆盖所有精选
+      .range(0, 999)
   } else {
     query = query.range(offset, offset + windowSize - 1)
   }
