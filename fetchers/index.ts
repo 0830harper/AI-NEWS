@@ -2,7 +2,7 @@ import { supabaseAdmin } from '../lib/supabase'
 import { calcHeatScore } from '../lib/heat'
 import { randomColor } from '../lib/colors'
 import { hashUrl } from '../lib/utils'
-import { extractOgImage } from '../lib/og-image'
+import { extractOgImage, isLogoUrl as isLogoUrlLib } from '../lib/og-image'
 import { RssFetcher } from './rss/generic'
 import { HackerNewsFetcher } from './api/hackernews'
 import { RedditFetcher } from './api/reddit'
@@ -224,23 +224,9 @@ async function saveArticle(sourceId: number, article: FetchedArticle, heatScore:
   return inserted?.id ?? null
 }
 
-/** Return true if the image URL looks like a site logo/icon rather than article content */
-function isLogoUrl(imgUrl: string): boolean {
-  try {
-    const path = new URL(imgUrl).pathname.toLowerCase()
-    return (
-      /\/(favicon|logo|icon|brand|watermark|placeholder|default[-_]?(img|image|thumb)?)(\.|\/|-|_)/.test(path) ||
-      /([-_](logo|icon|favicon|brand))\.(png|jpg|jpeg|svg|webp|gif)$/.test(path)
-    )
-  } catch {
-    return false
-  }
-}
-
 async function enrichWithOgImages(articles: FetchedArticle[]): Promise<void> {
-  // First: strip logo/icon URLs that came directly from RSS feeds
   articles.forEach((a) => {
-    if (a.thumbnail && isLogoUrl(a.thumbnail)) a.thumbnail = null
+    if (a.thumbnail && isLogoUrlLib(a.thumbnail)) a.thumbnail = null
   })
 
   const noImage = articles.filter((a) => !a.thumbnail && a.url)

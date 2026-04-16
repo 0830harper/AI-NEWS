@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "backfill-zh": "tsx scripts/backfill-zh.ts",
-    "backfill-zh:repair": "tsx scripts/backfill-zh.ts --repair"
+    "backfill-zh:repair": "tsx scripts/backfill-zh.ts --repair",
+    "backfill-thumbnails": "tsx scripts/backfill-thumbnails.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.2",
