@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { supabaseAdmin } from './supabase'
+import { looksLikeChinese } from './article-needs-client-translate'
 
 export interface ArticleTranslationInput {
   id: number
@@ -124,23 +125,36 @@ export async function translateAndPersistArticleIds(ids: number[]): Promise<void
     rows.map(r => ({ id: r.id, title: r.title, description: r.description }))
   )
 
-  const updates: { id: number; title_zh: string; description_zh: string | null }[] = []
+  const updates: { id: number; title_zh?: string; description_zh?: string | null }[] = []
   for (const t of translated) {
     const orig = originals.get(t.id)
     if (orig === undefined) continue
-    // Always persist so UI skips client translate; if model echoed EN, title_zh may match title.
-    updates.push({
+
+    const titleZh = t.title?.trim() || ''
+    // Only persist when the title was actually translated to Chinese.
+    // If the model echoed back English, leave title_zh NULL so the next
+    // backfill/repair run picks it up again — don't overwrite with English.
+    if (!looksLikeChinese(titleZh)) continue
+
+    const row: { id: number; title_zh: string; description_zh?: string | null } = {
       id: t.id,
-      title_zh: (t.title?.trim() || orig).slice(0, 500),
-      description_zh: t.description !== undefined ? (t.description?.slice(0, 1000) || null) : null,
-    })
+      title_zh: titleZh.slice(0, 500),
+    }
+    // Only include description_zh when it actually contains Chinese.
+    if (t.description !== undefined && t.description !== null) {
+      const descZh = String(t.description).trim()
+      if (looksLikeChinese(descZh) || descZh === '') {
+        row.description_zh = descZh.slice(0, 1000) || null
+      }
+    }
+    updates.push(row)
   }
 
   await Promise.all(
     updates.map(u =>
       (supabaseAdmin as any)
         .from('articles')
-        .update({ title_zh: u.title_zh, description_zh: u.description_zh })
+        .update(u)
         .eq('id', u.id)
     )
   )
