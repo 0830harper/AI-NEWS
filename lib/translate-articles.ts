@@ -28,7 +28,7 @@ async function translateBatch(articles: ArticleTranslationInput[]): Promise<Arti
     const { data } = await axios.post(
       'https://api.siliconflow.cn/v1/chat/completions',
       {
-        model: 'Qwen/Qwen2.5-7B-Instruct',
+        model: 'Qwen/Qwen3-8B',
         messages: [{
           role: 'user',
           content:
@@ -44,11 +44,12 @@ async function translateBatch(articles: ArticleTranslationInput[]): Promise<Arti
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
-        timeout: 25000,
+        timeout: 45000,
       }
     )
 
-    const reply: string = data.choices?.[0]?.message?.content?.trim() || ''
+    const raw: string = data.choices?.[0]?.message?.content?.trim() || ''
+    const reply = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim()
 
     const jsonStart = reply.indexOf('[')
     const jsonEnd = reply.lastIndexOf(']')
