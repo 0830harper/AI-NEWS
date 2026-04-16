@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react'
 import MasonryGrid from './MasonryGrid'
 import { Article } from '../types'
 import { useTranslation } from '../contexts/TranslationContext'
-import { articleNeedsClientTranslate } from '../lib/article-needs-client-translate'
 import { ui } from '../lib/ui-i18n'
 
 interface Props {
@@ -19,7 +18,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [hasMore, setHasMore] = useState(true)
-  const { isZh, translateArticles, translations } = useTranslation()
+  const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
   const fetchPage = useCallback(async (pageNum: number) => {
@@ -52,13 +51,9 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     fetchPage(1)
   }, [category, fetchPage])
 
-  // 中：缺中文标题或缺中文摘要（相对英文摘要）时立刻请求 /api/translate 补上
   useEffect(() => {
-    if (!isZh || articles.length === 0) return
-    if (!articles.some(a => articleNeedsClientTranslate(a, translations[a.id])))
-      return
-    void translateArticles(articles)
-  }, [isZh, articles, translateArticles, translations])
+    if (isZh && articles.length > 0) void translateArticles(articles)
+  }, [isZh, articles, translateArticles])
 
   if (initialLoading) {
     return (
@@ -78,12 +73,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
   const handleLoadMore = async () => {
     const newArticles = await fetchPage(page + 1)
-    if (
-      isZh &&
-      newArticles.some(a => articleNeedsClientTranslate(a, translations[a.id]))
-    ) {
-      void translateArticles(newArticles)
-    }
+    if (isZh && newArticles.length > 0) void translateArticles(newArticles)
   }
 
   return (

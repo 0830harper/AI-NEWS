@@ -1,10 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useCallback, useRef } from 'react'
 import { Article } from '../types'
-import {
-  articleNeedsClientTranslate,
-  looksLikeChinese,
-} from '../lib/article-needs-client-translate'
+import { looksLikeChinese } from '../lib/article-needs-client-translate'
 
 type Translations = Record<number, { title: string; description: string | null }>
 
@@ -17,99 +14,55 @@ interface TranslationContextType {
 
 const TranslationContext = createContext<TranslationContextType | null>(null)
 
-/** Smaller batches = fewer token errors / timeouts on SiliconFlow */
-const CLIENT_CHUNK = 10
-/** Model returned same text this many times → stop retrying until user toggles 中 again */
-const MAX_UNCHANGED_RETRIES = 3
-/** Brief pause between client-side chunks to stay within SiliconFlow rate limits */
-const CLIENT_CHUNK_DELAY_MS = 200
+function needsTranslate(a: Article, cache: Translations): boolean {
+  if (!a.title?.trim()) return false
+  if (looksLikeChinese(a.title_zh) || looksLikeChinese(cache[a.id]?.title)) return false
+  return true
+}
 
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
   const [isZh, setIsZh] = useState(false)
   const [translations, setTranslations] = useState<Translations>({})
   const inflight = useRef(false)
-  /** Too many identical responses — pause until user toggles EN → 中 */
-  const skipIds = useRef<Set<number>>(new Set())
-  const unchangedRetries = useRef<Map<number, number>>(new Map())
 
   const translateArticles = useCallback(
     async (articles: Article[]) => {
-      const toTranslate = articles.filter(
-        a =>
-          !skipIds.current.has(a.id) &&
-          articleNeedsClientTranslate(a, translations[a.id])
-      )
-      if (!toTranslate.length) return
-      if (inflight.current) return
+      const todo = articles.filter(a => needsTranslate(a, translations))
+      if (!todo.length || inflight.current) return
       inflight.current = true
 
-      const originals = new Map(toTranslate.map(a => [a.id, a.title]))
-      const originalsDesc = new Map(toTranslate.map(a => [a.id, a.description]))
-      const merged: Translations = {}
-
       try {
-        for (let i = 0; i < toTranslate.length; i += CLIENT_CHUNK) {
-          if (i > 0) await new Promise(res => setTimeout(res, CLIENT_CHUNK_DELAY_MS))
-          const slice = toTranslate.slice(i, i + CLIENT_CHUNK)
-          const res = await fetch('/api/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              articles: slice.map(a => ({
-                id: a.id,
-                title: a.title,
-                description: a.description,
-              })),
-            }),
-          })
-          if (!res.ok) continue
-          const data = await res.json()
-          const rows = (data.translations || []) as {
-            id: number
-            title: string
-            description: string | null
-          }[]
+        const res = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            articles: todo.map(a => ({
+              id: a.id,
+              title: a.title,
+              description: a.description,
+            })),
+          }),
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        const merged: Translations = {}
 
-          for (const item of rows) {
-            const originalTitle = originals.get(item.id)
-            const originalDesc = originalsDesc.get(item.id)
-            if (!item.title || originalTitle === undefined) continue
-            const titleChanged = item.title !== originalTitle
-            const descChanged =
-              item.description !== undefined && item.description !== originalDesc
-            if (titleChanged || descChanged) {
-              merged[item.id] = {
-                title: item.title,
-                description: item.description,
-              }
-              unchangedRetries.current.delete(item.id)
-            } else {
-              const n = (unchangedRetries.current.get(item.id) ?? 0) + 1
-              unchangedRetries.current.set(item.id, n)
-              if (n >= MAX_UNCHANGED_RETRIES) {
-                skipIds.current.add(item.id)
-              }
-            }
+        for (const item of (data.translations || [])) {
+          if (item.title) {
+            merged[item.id] = { title: item.title, description: item.description }
           }
         }
 
         if (Object.keys(merged).length) {
           setTranslations(prev => ({ ...prev, ...merged }))
+
           const payload = Object.entries(merged)
             .map(([id, v]) => ({
               id: Number(id),
               title_zh: v.title,
               description_zh: v.description,
             }))
-            .filter(u => {
-              if (looksLikeChinese(u.title_zh)) return true
-              if (u.description_zh !== null && u.description_zh !== undefined) {
-                const d = String(u.description_zh).trim()
-                if (d === '') return true
-                if (looksLikeChinese(u.description_zh)) return true
-              }
-              return false
-            })
+            .filter(u => looksLikeChinese(u.title_zh))
           if (payload.length) {
             void fetch('/api/articles/persist-translation', {
               method: 'POST',
@@ -119,7 +72,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
           }
         }
       } catch {
-        // Network error — retry on next effect
+        // retry on next toggle
       } finally {
         inflight.current = false
       }
@@ -127,16 +80,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     [translations]
   )
 
-  const toggle = useCallback(() => {
-    setIsZh(prev => {
-      const next = !prev
-      if (next) {
-        skipIds.current.clear()
-        unchangedRetries.current.clear()
-      }
-      return next
-    })
-  }, [])
+  const toggle = useCallback(() => setIsZh(v => !v), [])
 
   return (
     <TranslationContext.Provider value={{ isZh, toggle, translations, translateArticles }}>

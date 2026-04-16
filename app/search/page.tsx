@@ -4,13 +4,12 @@ import { useSearchParams } from 'next/navigation'
 import MasonryGrid from '../../components/MasonryGrid'
 import { Article } from '../../types'
 import { useTranslation } from '../../contexts/TranslationContext'
-import { articleNeedsClientTranslate } from '../../lib/article-needs-client-translate'
 import { ui, searchResultLine } from '../../lib/ui-i18n'
 
 function SearchContent() {
   const searchParams = useSearchParams()
   const q = searchParams.get('q') || ''
-  const { isZh, translateArticles, translations } = useTranslation()
+  const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
   const [articles, setArticles] = useState<Article[]>([])
@@ -45,11 +44,8 @@ function SearchContent() {
   }, [q, doSearch])
 
   useEffect(() => {
-    if (!isZh || articles.length === 0) return
-    if (!articles.some(a => articleNeedsClientTranslate(a, translations[a.id])))
-      return
-    void translateArticles(articles)
-  }, [isZh, articles, translateArticles, translations])
+    if (isZh && articles.length > 0) void translateArticles(articles)
+  }, [isZh, articles, translateArticles])
 
   return (
     <div>
