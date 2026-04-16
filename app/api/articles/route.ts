@@ -45,7 +45,8 @@ function weightedSort(articles: any[], maxPerSource: number, limit: number): any
       const ageDays = Math.max(0, (now - new Date(a.published_at).getTime()) / 86_400_000)
       const timeFactor = Math.pow(0.5, ageDays / 3) // half-life 3 days (was 7)
       const freshMultiplier = ageDays < 1 ? 1.8 : ageDays < 2 ? 1.4 : ageDays < 3 ? 1.1 : 1.0
-      const ws = normalised > 0 ? Math.max(1, Math.round(normalised * timeFactor * freshMultiplier)) : 0
+      const imageBoost = a.thumbnail ? 1.3 : 1.0
+      const ws = normalised > 0 ? Math.max(1, Math.round(normalised * timeFactor * freshMultiplier * imageBoost)) : 0
       return {
         ...a,
         weighted_score: ws,
