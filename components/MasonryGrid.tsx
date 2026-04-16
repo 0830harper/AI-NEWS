@@ -8,19 +8,20 @@ interface Props {
   cols?: number
 }
 
-/** Rough height estimate (px) so we can balance columns without measuring the DOM. */
+/** Rough height estimate (px) so we can balance columns without measuring the DOM.
+ *  With thum.io fallback, almost every card has an image now. */
 function estimateCardHeight(a: Article): number {
-  const hasImage = Boolean(a.thumbnail)
+  const hasDbImage = Boolean(a.thumbnail)
+  const hasUrl = Boolean(a.url)
+  const willHaveImage = hasDbImage || hasUrl
   const titleLen = (a.title || '').length
   const descLen = (a.description || '').length
 
-  if (hasImage) {
-    // image block (~200) + padding (80) + title lines + desc + meta
+  if (willHaveImage) {
     const titleLines = Math.ceil(titleLen / 28)
     const descLines = descLen > 0 ? Math.ceil(Math.min(descLen, 100) / 40) : 0
     return 280 + titleLines * 28 + descLines * 20 + 40
   }
-  // text-only card: min-h 208 + title + desc + meta
   const titleLines = Math.ceil(titleLen / 22)
   const descLines = descLen > 0 ? Math.ceil(Math.min(descLen, 100) / 36) : 0
   return Math.max(208, 80 + titleLines * 28 + descLines * 20 + 60)

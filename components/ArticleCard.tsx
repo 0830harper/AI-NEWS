@@ -91,16 +91,20 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
     : null
   const lightBg = isLightColor(article.card_color || '#4D96FF')
 
+  const thumbSrc = article.thumbnail
+    || (article.url ? `https://image.thum.io/get/width/600/crop/400/${article.url}` : null)
+
   useEffect(() => {
-    if (!article.thumbnail) return
+    if (!thumbSrc) return
     const img = new Image()
     img.onload = () => {
       if (img.naturalWidth >= 50 && img.naturalHeight >= 50) {
         setImgReady(true)
       }
     }
-    img.src = article.thumbnail
-  }, [article.thumbnail])
+    img.onerror = () => setImgReady(false)
+    img.src = thumbSrc
+  }, [thumbSrc])
 
   function handleClick() {
     fetch(`/api/articles/${article.id}/click`, { method: 'POST' })
@@ -118,7 +122,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
           >
             <div className="pt-10 px-10">
               <img
-                src={article.thumbnail!}
+                src={thumbSrc!}
                 alt=""
                 className="w-full block"
               />
