@@ -145,39 +145,33 @@ export default function Header() {
               border: 'none',
               padding: 0,
               cursor: 'pointer',
-              filter: 'drop-shadow(3px 4px 0px #c0c0c0)',
+              filter: 'drop-shadow(2px 3px 0px var(--search-shadow, #c0c0c0))',
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="46" viewBox="0 0 80 46" fill="none">
-              {/* White background */}
-              <rect x="2" y="2" width="76" height="42" rx="10" fill="#ffffff"/>
-              {/* Black border */}
-              <rect x="2" y="2" width="76" height="42" rx="10" fill="none" stroke="#1a1a1a" strokeWidth="3.5"/>
-              {/* Active side fill */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="62" height="34" viewBox="0 0 62 34" fill="none">
+              <rect x="1.5" y="1.5" width="59" height="31" rx="8" fill="#ffffff"/>
+              <rect x="1.5" y="1.5" width="59" height="31" rx="8" fill="none" stroke="#1a1a1a" strokeWidth="2.5"/>
               {!isZh ? (
                 <>
-                  <rect x="2" y="2" width="38" height="42" rx="10" fill="#1a1a1a"/>
-                  <rect x="32" y="2" width="8" height="42" fill="#1a1a1a"/>
+                  <rect x="1.5" y="1.5" width="29.5" height="31" rx="8" fill="#1a1a1a"/>
+                  <rect x="24" y="1.5" width="7" height="31" fill="#1a1a1a"/>
                 </>
               ) : (
                 <>
-                  <rect x="40" y="2" width="38" height="42" rx="10" fill="#1a1a1a"/>
-                  <rect x="40" y="2" width="8" height="42" fill="#1a1a1a"/>
+                  <rect x="31" y="1.5" width="29.5" height="31" rx="8" fill="#1a1a1a"/>
+                  <rect x="31" y="1.5" width="7" height="31" fill="#1a1a1a"/>
                 </>
               )}
-              {/* Center divider */}
-              <line x1="40" y1="2" x2="40" y2="44" stroke="#1a1a1a" strokeWidth="3"/>
-              {/* EN label */}
-              <text x="21" y="23" textAnchor="middle" dominantBaseline="central"
+              <line x1="31" y1="1.5" x2="31" y2="32.5" stroke="#1a1a1a" strokeWidth="2.5"/>
+              <text x="16.5" y="17" textAnchor="middle" dominantBaseline="central"
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
-                fontSize="13" fontWeight="900"
+                fontSize="11" fontWeight="900"
                 fill={!isZh ? '#ffffff' : '#1a1a1a'}>
                 EN
               </text>
-              {/* 中 label */}
-              <text x="59" y="23" textAnchor="middle" dominantBaseline="central"
+              <text x="46" y="17" textAnchor="middle" dominantBaseline="central"
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
-                fontSize="13" fontWeight="900"
+                fontSize="11" fontWeight="900"
                 fill={isZh ? '#ffffff' : '#1a1a1a'}>
                 中
               </text>
