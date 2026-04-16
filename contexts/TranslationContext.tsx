@@ -20,7 +20,9 @@ const TranslationContext = createContext<TranslationContextType | null>(null)
 /** Smaller batches = fewer token errors / timeouts on SiliconFlow */
 const CLIENT_CHUNK = 10
 /** Model returned same text this many times → stop retrying until user toggles 中 again */
-const MAX_UNCHANGED_RETRIES = 8
+const MAX_UNCHANGED_RETRIES = 3
+/** Brief pause between client-side chunks to stay within SiliconFlow rate limits */
+const CLIENT_CHUNK_DELAY_MS = 200
 
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
   const [isZh, setIsZh] = useState(false)
@@ -47,6 +49,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
 
       try {
         for (let i = 0; i < toTranslate.length; i += CLIENT_CHUNK) {
+          if (i > 0) await new Promise(res => setTimeout(res, CLIENT_CHUNK_DELAY_MS))
           const slice = toTranslate.slice(i, i + CLIENT_CHUNK)
           const res = await fetch('/api/translate', {
             method: 'POST',

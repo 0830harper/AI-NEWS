@@ -8,7 +8,10 @@ export interface ArticleTranslationInput {
 }
 
 const BATCH_SIZE = Math.min(24, Math.max(1, parseInt(process.env.TRANSLATE_BATCH_SIZE || '10', 10)))
-const MAX_CONCURRENT = Math.min(6, Math.max(1, parseInt(process.env.TRANSLATE_MAX_CONCURRENT || '2', 10)))
+// SiliconFlow free tier handles only 1 concurrent request reliably; default=1 prevents rate-limit failures
+const MAX_CONCURRENT = Math.min(6, Math.max(1, parseInt(process.env.TRANSLATE_MAX_CONCURRENT || '1', 10)))
+// Milliseconds to pause between consecutive batch groups (prevents 429 on sustained workloads)
+const BATCH_DELAY_MS = Math.max(0, parseInt(process.env.TRANSLATE_BATCH_DELAY_MS || '300', 10))
 
 /**
  * Translate a batch of articles in a single LLM call using JSON format.
@@ -29,6 +32,9 @@ async function translateBatch(articles: ArticleTranslationInput[]): Promise<Arti
       'https://api.siliconflow.cn/v1/chat/completions',
       {
         model: 'Qwen/Qwen3-8B',
+        // Disable CoT thinking to avoid <think> tokens consuming the token budget
+        // and causing truncated / unparseable JSON responses
+        enable_thinking: false,
         messages: [{
           role: 'user',
           content:
@@ -36,7 +42,7 @@ async function translateBatch(articles: ArticleTranslationInput[]): Promise<Arti
             '保持JSON结构和id不变，直接输出JSON数组，不要任何其他文字：\n\n' +
             JSON.stringify(input),
         }],
-        max_tokens: Math.min(4096, 600 + articles.length * 320),
+        max_tokens: Math.min(4096, 200 + articles.length * 180),
         temperature: 0,
       },
       {
@@ -87,6 +93,9 @@ export async function translateAllBatches(
 
   const all: ArticleTranslationInput[] = []
   for (let i = 0; i < batches.length; i += MAX_CONCURRENT) {
+    if (i > 0 && BATCH_DELAY_MS > 0) {
+      await new Promise(res => setTimeout(res, BATCH_DELAY_MS))
+    }
     const chunk = batches.slice(i, i + MAX_CONCURRENT)
     const results = await Promise.all(chunk.map(b => translateBatch(b)))
     results.forEach(r => all.push(...r))
