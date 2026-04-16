@@ -145,42 +145,40 @@ export default function Header() {
               border: 'none',
               padding: 0,
               cursor: 'pointer',
-              opacity: 1,
+              filter: 'drop-shadow(3px 4px 0px #c0c0c0)',
             }}
           >
-            <svg width="72" height="34" viewBox="0 0 72 34" fill="none">
-              {/* Shadow */}
-              <rect x="3" y="3" width="68" height="30" rx="9" fill="var(--translate-shadow)"/>
-              {/* Base bg */}
-              <rect x="1" y="1" width="68" height="30" rx="9" fill="var(--translate-bg)"/>
-              {/* Border */}
-              <rect x="1" y="1" width="68" height="30" rx="9" fill="none" stroke="var(--translate-border)" strokeWidth="2.5"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="46" viewBox="0 0 80 46" fill="none">
+              {/* White background */}
+              <rect x="2" y="2" width="76" height="42" rx="10" fill="#ffffff"/>
+              {/* Black border */}
+              <rect x="2" y="2" width="76" height="42" rx="10" fill="none" stroke="#1a1a1a" strokeWidth="3.5"/>
               {/* Active side fill */}
               {!isZh ? (
                 <>
-                  <rect x="1" y="1" width="34" height="30" rx="9" fill="var(--translate-active-bg)"/>
-                  <rect x="27" y="1" width="7" height="30" fill="var(--translate-active-bg)"/>
+                  <rect x="2" y="2" width="38" height="42" rx="10" fill="#1a1a1a"/>
+                  <rect x="32" y="2" width="8" height="42" fill="#1a1a1a"/>
                 </>
               ) : (
                 <>
-                  <rect x="35" y="1" width="34" height="30" rx="9" fill="var(--translate-active-bg)"/>
-                  <rect x="35" y="1" width="7" height="30" fill="var(--translate-active-bg)"/>
+                  <rect x="40" y="2" width="38" height="42" rx="10" fill="#1a1a1a"/>
+                  <rect x="40" y="2" width="8" height="42" fill="#1a1a1a"/>
                 </>
               )}
-              {/* Divider */}
-              <line x1="35" y1="1" x2="35" y2="31" stroke="var(--translate-border)" strokeWidth="2"/>
+              {/* Center divider */}
+              <line x1="40" y1="2" x2="40" y2="44" stroke="#1a1a1a" strokeWidth="3"/>
               {/* EN label */}
-              <text x="18" y="16" textAnchor="middle" dominantBaseline="central"
+              <text x="21" y="23" textAnchor="middle" dominantBaseline="central"
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
-                fontSize="12" fontWeight="900"
-                fill={!isZh ? 'var(--translate-active-text)' : 'var(--translate-border)'}>
+                fontSize="13" fontWeight="900"
+                fill={!isZh ? '#ffffff' : '#1a1a1a'}>
                 EN
               </text>
               {/* 中 label */}
-              <text x="53" y="16" textAnchor="middle" dominantBaseline="central"
+              <text x="59" y="23" textAnchor="middle" dominantBaseline="central"
                 fontFamily="'Arial Black','Helvetica Neue',sans-serif"
-                fontSize="12" fontWeight="900"
-                fill={isZh ? 'var(--translate-active-text)' : 'var(--translate-border)'}>
+                fontSize="13" fontWeight="900"
+                fill={isZh ? '#ffffff' : '#1a1a1a'}>
                 中
               </text>
             </svg>

@@ -28,6 +28,31 @@ function diversify(articles: any[], maxPerSource: number): any[] {
  *  apply exponential time decay (half-life = 7 days),
  *  then sort all articles by final score descending.
  *  Trims the result to a full multiple of COLS so the last row is always complete. */
+const PICK_CATEGORIES = ['app', 'design', 'uxui', 'tech']
+const MIN_PER_CATEGORY = 4
+
+function scoreArticle(a: any, sourceMax: Record<number, number>, now: number) {
+  const normalised = sourceMax[a.source_id] > 0
+    ? (a.raw_score / sourceMax[a.source_id]) * 100
+    : 0
+  const ageDays = Math.max(0, (now - new Date(a.published_at).getTime()) / 86_400_000)
+  const timeFactor = Math.pow(0.5, ageDays / 3)
+  const freshMultiplier = ageDays < 1 ? 1.8 : ageDays < 2 ? 1.4 : ageDays < 3 ? 1.1 : 1.0
+  const base = normalised > 0 ? normalised : 15
+  const imageBoost = a.thumbnail ? 1.6 : 1.0
+  return Math.max(1, Math.round(base * timeFactor * freshMultiplier * imageBoost))
+}
+
+/** Resolve the effective category for an article (ai_category > source category) */
+function effectiveCategory(a: any): string {
+  return a.ai_category || a.sources?.category || ''
+}
+
+/**
+ * Pick scoring: guarantee MIN_PER_CATEGORY from each category,
+ * then fill the rest by global score. This ensures Tool / Visual / UX articles
+ * appear even when Tech dominates by HN score.
+ */
 function weightedSort(articles: any[], maxPerSource: number, limit: number): any[] {
   const sourceMax: Record<number, number> = {}
   for (const a of articles) {
@@ -35,29 +60,51 @@ function weightedSort(articles: any[], maxPerSource: number, limit: number): any
   }
   const now = Date.now()
   const sourceCount: Record<number, number> = {}
+
   const scored = articles
-    .map(a => {
-      const normalised = sourceMax[a.source_id] > 0
-        ? (a.raw_score / sourceMax[a.source_id]) * 100
-        : 0
-      const ageDays = Math.max(0, (now - new Date(a.published_at).getTime()) / 86_400_000)
-      const timeFactor = Math.pow(0.5, ageDays / 3)
-      const freshMultiplier = ageDays < 1 ? 1.8 : ageDays < 2 ? 1.4 : ageDays < 3 ? 1.1 : 1.0
-
-      // Articles without HN score still get a base score so they can appear in Pick
-      const base = normalised > 0 ? normalised : 15
-      const imageBoost = a.thumbnail ? 1.6 : 1.0
-
-      const ws = Math.max(1, Math.round(base * timeFactor * freshMultiplier * imageBoost))
-      return { ...a, weighted_score: ws }
-    })
+    .map(a => ({ ...a, weighted_score: scoreArticle(a, sourceMax, now) }))
     .filter(a => {
       sourceCount[a.source_id] = (sourceCount[a.source_id] ?? 0) + 1
       return sourceCount[a.source_id] <= maxPerSource
     })
+
+  // Group by category
+  const byCat: Record<string, any[]> = {}
+  for (const a of scored) {
+    const cat = effectiveCategory(a)
+    if (!byCat[cat]) byCat[cat] = []
+    byCat[cat].push(a)
+  }
+  for (const cat of Object.keys(byCat)) {
+    byCat[cat].sort((a: any, b: any) => b.weighted_score - a.weighted_score)
+  }
+
+  // Step 1: reserve top MIN_PER_CATEGORY from each category
+  const picked = new Set<number>()
+  const result: any[] = []
+  for (const cat of PICK_CATEGORIES) {
+    const pool = byCat[cat] || []
+    let added = 0
+    for (const a of pool) {
+      if (added >= MIN_PER_CATEGORY) break
+      if (picked.has(a.id)) continue
+      picked.add(a.id)
+      result.push(a)
+      added++
+    }
+  }
+
+  // Step 2: fill remaining slots from global pool by score
+  const global = scored
+    .filter(a => !picked.has(a.id))
     .sort((a, b) => b.weighted_score - a.weighted_score)
-    .slice(0, limit)
-  return scored
+  for (const a of global) {
+    result.push(a)
+  }
+
+  // Final sort by score so the page looks ordered
+  result.sort((a, b) => b.weighted_score - a.weighted_score)
+  return result.slice(0, limit)
 }
 
 export async function GET(req: NextRequest) {
