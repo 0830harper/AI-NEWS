@@ -8,73 +8,17 @@ interface Props {
   cols?: number
 }
 
-/** Rough height estimate (px) so we can balance columns without measuring the DOM.
- *  With thum.io fallback, almost every card has an image now. */
-function estimateCardHeight(a: Article): number {
-  const hasDbImage = Boolean(a.thumbnail)
-  const hasUrl = Boolean(a.url)
-  const willHaveImage = hasDbImage || hasUrl
-  const titleLen = (a.title || '').length
-  const descLen = (a.description || '').length
-
-  if (willHaveImage) {
-    const titleLines = Math.ceil(titleLen / 28)
-    const descLines = descLen > 0 ? Math.ceil(Math.min(descLen, 100) / 40) : 0
-    return 280 + titleLines * 28 + descLines * 20 + 40
-  }
-  const titleLines = Math.ceil(titleLen / 22)
-  const descLines = descLen > 0 ? Math.ceil(Math.min(descLen, 100) / 36) : 0
-  return Math.max(208, 80 + titleLines * 28 + descLines * 20 + 60)
-}
-
 /**
- * Distribute articles into columns with two goals:
- *   1. Preserve approximate left-to-right reading order (row by row)
- *   2. Keep column heights balanced so the bottom edge is roughly even
+ * Distribute articles into columns using round-robin.
  *
- * Algorithm: process articles in row-groups of `cols`. Within each group,
- * assign each article to the column with the smallest accumulated height,
- * but only among the columns that haven't received an article in this group yet.
- * This way each "row" still fills left-to-right-ish, but tall cards get
- * placed in shorter columns first.
+ * Round-robin guarantees:
+ *   • Left-to-right, row-by-row reading order is preserved.
+ *   • Card counts differ by at most 1 between columns.
+ *   • When N % cols ≠ 0 the *last* column ends up with one fewer card
+ *     (right-side taper), which is less visually jarring than a short
+ *     middle column.
+ *   • For PAGE_SIZE = 30 (divisible by 3) there is zero gap.
  */
-function balancedDistribute(articles: Article[], cols: number): Article[][] {
-  const columns: Article[][] = Array.from({ length: cols }, () => [])
-  const heights: number[] = new Array(cols).fill(0)
-
-  for (let i = 0; i < articles.length; i += cols) {
-    const group = articles.slice(i, i + cols)
-
-    // Build (article, estimatedHeight) pairs
-    const items = group.map(a => ({ article: a, h: estimateCardHeight(a) }))
-
-    // Sort items tallest-first so tall cards go into the shortest columns
-    const sorted = items
-      .map((item, idx) => ({ ...item, origIdx: idx }))
-      .sort((a, b) => b.h - a.h)
-
-    const usedCols = new Set<number>()
-
-    for (const item of sorted) {
-      // Find the shortest available column
-      let bestCol = -1
-      let bestH = Infinity
-      for (let c = 0; c < cols; c++) {
-        if (usedCols.has(c)) continue
-        if (heights[c] < bestH) {
-          bestH = heights[c]
-          bestCol = c
-        }
-      }
-      if (bestCol === -1) break
-      usedCols.add(bestCol)
-      columns[bestCol].push(item.article)
-      heights[bestCol] += item.h + 32 // 32 ≈ gap between cards
-    }
-  }
-
-  return columns
-}
 
 export default function MasonryGrid({ articles, showCategory = false, cols = 3 }: Props) {
   if (!articles.length) {
@@ -85,7 +29,8 @@ export default function MasonryGrid({ articles, showCategory = false, cols = 3 }
     )
   }
 
-  const columns = balancedDistribute(articles, cols)
+  const columns: Article[][] = Array.from({ length: cols }, () => [])
+  articles.forEach((article, i) => columns[i % cols].push(article))
 
   return (
     <div className="flex gap-6 md:gap-8 items-start">

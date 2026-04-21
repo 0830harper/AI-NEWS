@@ -91,18 +91,53 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
     : null
   const lightBg = isLightColor(article.card_color || '#4D96FF')
 
-  const thumbSrc = article.thumbnail
-    || (article.url ? `https://image.thum.io/get/width/600/crop/400/${article.url}` : null)
+  // Only use stored thumbnails (og:image from the article source).
+  // thum.io fallbacks frequently return blank white screenshots when the
+  // page was captured mid-load — removing them eliminates white-image cards.
+  const thumbSrc = article.thumbnail ?? null
 
   useEffect(() => {
     if (!thumbSrc) return
+
     const img = new Image()
+    img.crossOrigin = 'anonymous'   // request CORS headers so canvas can read pixels
+
     img.onload = () => {
-      if (img.naturalWidth >= 50 && img.naturalHeight >= 50) {
+      if (img.naturalWidth < 50 || img.naturalHeight < 50) return
+      // Pixel-sample the image at low resolution to detect blank/white images.
+      // Falls open (shows image) if CORS blocks canvas access.
+      try {
+        const W = 80, H = 60
+        const canvas = document.createElement('canvas')
+        canvas.width = W
+        canvas.height = H
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { setImgReady(true); return }
+        ctx.drawImage(img, 0, 0, W, H)
+        const { data } = ctx.getImageData(0, 0, W, H)
+        let white = 0
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i] > 240 && data[i + 1] > 240 && data[i + 2] > 240) white++
+        }
+        // If > 85 % of sampled pixels are near-white → blank image, stay text-mode
+        if (white / (W * H) > 0.85) return
+        setImgReady(true)
+      } catch {
+        // SecurityError (CORS tainted) or other — fail open, show the image
         setImgReady(true)
       }
     }
-    img.onerror = () => setImgReady(false)
+
+    img.onerror = () => {
+      // CORS anonymous request failed; retry without CORS to at least show image
+      // (canvas analysis won't be possible, but the image itself may load fine)
+      const fallback = new Image()
+      fallback.onload = () => {
+        if (fallback.naturalWidth >= 50 && fallback.naturalHeight >= 50) setImgReady(true)
+      }
+      fallback.src = thumbSrc
+    }
+
     img.src = thumbSrc
   }, [thumbSrc])
 
