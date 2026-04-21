@@ -25,14 +25,6 @@ const TALL = 500   // image card: colour-block (≈300px) + text (≈130px) + ga
 const SHORT = 260  // text-only: min-h-52 (208px) + title/desc/meta (≈52px)
 
 export default function MasonryGrid({ articles, showCategory = false, cols = 3 }: Props) {
-  if (!articles.length) {
-    return (
-      <div className="text-center text-gray-400 py-20 text-sm">
-        No articles yet. Run the fetcher to populate content.
-      </div>
-    )
-  }
-
   const columns = useMemo(() => {
     const cols_: Article[][] = Array.from({ length: cols }, () => [])
     const heights = Array(cols).fill(0)
@@ -46,6 +38,14 @@ export default function MasonryGrid({ articles, showCategory = false, cols = 3 }
     }
     return cols_
   }, [articles, cols])
+
+  if (!articles.length) {
+    return (
+      <div className="text-center text-gray-400 py-20 text-sm">
+        No articles yet. Run the fetcher to populate content.
+      </div>
+    )
+  }
 
   return (
     <div className="flex gap-6 md:gap-8 items-start">

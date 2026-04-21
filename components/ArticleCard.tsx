@@ -154,7 +154,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
   }
 
   return (
-    <div onClick={handleClick} className="cursor-pointer group mb-8 break-inside-avoid">
+    <div onClick={handleClick} className="cursor-pointer group mb-5 sm:mb-8 break-inside-avoid">
       {imgReady ? (
         /* ── 有图模式：色块内嵌图片，文字在色块下方 ── */
         <>
@@ -162,7 +162,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             className="overflow-hidden transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-xl"
             style={{ backgroundColor: article.card_color }}
           >
-            <div className="pt-10 px-10">
+            <div className="pt-6 px-6 sm:pt-10 sm:px-10">
               <img
                 src={thumbSrc!}
                 alt=""
@@ -171,7 +171,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
             </div>
           </div>
           <div className="pt-3 px-0.5">
-            <h2 className="text-xl font-bold leading-snug mb-1.5" style={{ color: 'var(--card-title)' }}>
+            <h2 className="text-base sm:text-xl font-bold leading-snug mb-1.5" style={{ color: 'var(--card-title)' }}>
               {title}
             </h2>
             {description && (
@@ -197,10 +197,10 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
       ) : (
         /* ── 无图模式：标题文字在色块内部 ── */
         <div
-          className="overflow-hidden transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-xl p-10 flex flex-col justify-between min-h-52"
+          className="overflow-hidden transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-xl p-5 sm:p-10 flex flex-col justify-between min-h-36 sm:min-h-52"
           style={{ backgroundColor: article.card_color }}
         >
-          <h2 className="text-xl font-bold text-gray-900 leading-snug">
+          <h2 className="text-base sm:text-xl font-bold text-gray-900 leading-snug">
             {title}
           </h2>
           {description && (

@@ -17,6 +17,14 @@ function SearchContent() {
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
+  const [cols, setCols] = useState(3)
+
+  useEffect(() => {
+    const update = () => setCols(window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3)
+    update()
+    window.addEventListener('resize', update, { passive: true })
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   const doSearch = useCallback(async (query: string, pageNum: number) => {
     if (!query.trim()) { setArticles([]); setTotal(null); return }
@@ -65,7 +73,7 @@ function SearchContent() {
 
       {/* Results */}
       {articles.length > 0 && (
-        <MasonryGrid articles={articles} showCategory={true} />
+        <MasonryGrid articles={articles} showCategory={true} cols={cols} />
       )}
 
       {/* Load more */}

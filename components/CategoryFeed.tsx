@@ -18,8 +18,16 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [hasMore, setHasMore] = useState(true)
+  const [cols, setCols] = useState(3)
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
+
+  useEffect(() => {
+    const update = () => setCols(window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3)
+    update()
+    window.addEventListener('resize', update, { passive: true })
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   const fetchPage = useCallback(async (pageNum: number) => {
     setLoading(true)
@@ -78,7 +86,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
   return (
     <div>
-      <MasonryGrid articles={articles} showCategory={showCategory} />
+      <MasonryGrid articles={articles} showCategory={showCategory} cols={cols} />
 
       {hasMore && (
         <div className="flex justify-center mt-10 mb-6">
