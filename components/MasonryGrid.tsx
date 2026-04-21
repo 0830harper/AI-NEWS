@@ -1,4 +1,5 @@
 'use client'
+import { useMemo } from 'react'
 import { Article } from '../types'
 import ArticleCard from './ArticleCard'
 
@@ -32,18 +33,19 @@ export default function MasonryGrid({ articles, showCategory = false, cols = 3 }
     )
   }
 
-  const columns: Article[][] = Array.from({ length: cols }, () => [])
-  const heights = Array(cols).fill(0)
-
-  for (const article of articles) {
-    // Pick the shortest column (leftmost on tie)
-    let col = 0
-    for (let c = 1; c < cols; c++) {
-      if (heights[c] < heights[col]) col = c
+  const columns = useMemo(() => {
+    const cols_: Article[][] = Array.from({ length: cols }, () => [])
+    const heights = Array(cols).fill(0)
+    for (const article of articles) {
+      let col = 0
+      for (let c = 1; c < cols; c++) {
+        if (heights[c] < heights[col]) col = c
+      }
+      cols_[col].push(article)
+      heights[col] += article.thumbnail ? TALL : SHORT
     }
-    columns[col].push(article)
-    heights[col] += article.thumbnail ? TALL : SHORT
-  }
+    return cols_
+  }, [articles, cols])
 
   return (
     <div className="flex gap-6 md:gap-8 items-start">

@@ -96,49 +96,56 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
   // page was captured mid-load — removing them eliminates white-image cards.
   const thumbSrc = article.thumbnail ?? null
 
+  const SAMPLE_W = 80, SAMPLE_H = 60
+  const WHITE_THRESHOLD = 240  // per channel — values above this are near-white
+  const WHITE_RATIO = 0.85     // fraction of pixels that must be white to reject the image
+  const MIN_DIM = 50           // ignore tiny images (icons, spacers)
+
   useEffect(() => {
     if (!thumbSrc) return
 
+    let mounted = true
+
     const img = new Image()
-    img.crossOrigin = 'anonymous'   // request CORS headers so canvas can read pixels
+    img.crossOrigin = 'anonymous'   // needed for getImageData(); falls back on error
 
     img.onload = () => {
-      if (img.naturalWidth < 50 || img.naturalHeight < 50) return
-      // Pixel-sample the image at low resolution to detect blank/white images.
-      // Falls open (shows image) if CORS blocks canvas access.
+      if (!mounted) return
+      if (img.naturalWidth < MIN_DIM || img.naturalHeight < MIN_DIM) return
+      // Sample pixels at low resolution to catch blank/white og:images without
+      // downloading the full file. Falls open on SecurityError (cross-origin CORS denial).
       try {
-        const W = 80, H = 60
         const canvas = document.createElement('canvas')
-        canvas.width = W
-        canvas.height = H
+        canvas.width = SAMPLE_W
+        canvas.height = SAMPLE_H
         const ctx = canvas.getContext('2d')
         if (!ctx) { setImgReady(true); return }
-        ctx.drawImage(img, 0, 0, W, H)
-        const { data } = ctx.getImageData(0, 0, W, H)
+        ctx.drawImage(img, 0, 0, SAMPLE_W, SAMPLE_H)
+        const { data } = ctx.getImageData(0, 0, SAMPLE_W, SAMPLE_H)
         let white = 0
         for (let i = 0; i < data.length; i += 4) {
-          if (data[i] > 240 && data[i + 1] > 240 && data[i + 2] > 240) white++
+          if (data[i] > WHITE_THRESHOLD && data[i + 1] > WHITE_THRESHOLD && data[i + 2] > WHITE_THRESHOLD) white++
         }
-        // If > 85 % of sampled pixels are near-white → blank image, stay text-mode
-        if (white / (W * H) > 0.85) return
+        if (white / (SAMPLE_W * SAMPLE_H) > WHITE_RATIO) return  // blank image — stay text-mode
         setImgReady(true)
       } catch {
-        // SecurityError (CORS tainted) or other — fail open, show the image
-        setImgReady(true)
+        setImgReady(true)  // CORS tainted — fail open
       }
     }
 
     img.onerror = () => {
-      // CORS anonymous request failed; retry without CORS to at least show image
-      // (canvas analysis won't be possible, but the image itself may load fine)
+      if (!mounted) return
+      // Server didn't send CORS headers; reload without crossOrigin so the browser
+      // can at least display the image (pixel analysis unavailable, but that's acceptable).
       const fallback = new Image()
       fallback.onload = () => {
-        if (fallback.naturalWidth >= 50 && fallback.naturalHeight >= 50) setImgReady(true)
+        if (mounted && fallback.naturalWidth >= MIN_DIM && fallback.naturalHeight >= MIN_DIM) setImgReady(true)
       }
       fallback.src = thumbSrc
     }
 
     img.src = thumbSrc
+    return () => { mounted = false }
   }, [thumbSrc])
 
   function handleClick() {

@@ -30,22 +30,25 @@ const TIMEOUT_MS = 8_000
 
 /** Returns the file size in bytes, or null if undetermined. */
 async function getImageSize(url: string): Promise<number | null> {
+  // HEAD first — no body download, just Content-Length
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
   try {
-    const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
     const res = await fetch(url, { method: 'HEAD', signal: ctrl.signal })
     clearTimeout(timer)
     if (!res.ok) return null
     const cl = Number(res.headers.get('content-length') ?? 0)
     if (cl > 0) return cl
+  } catch {
+    clearTimeout(timer)
+    return null
+  }
 
-    // HEAD gave no Content-Length — use Range request for total size
-    const ctrl2 = new AbortController()
-    const timer2 = setTimeout(() => ctrl2.abort(), TIMEOUT_MS)
-    const range = await fetch(url, {
-      headers: { Range: 'bytes=0-0' },
-      signal: ctrl2.signal,
-    })
+  // HEAD gave no Content-Length — use Range request to read total from Content-Range
+  const ctrl2 = new AbortController()
+  const timer2 = setTimeout(() => ctrl2.abort(), TIMEOUT_MS)
+  try {
+    const range = await fetch(url, { headers: { Range: 'bytes=0-0' }, signal: ctrl2.signal })
     clearTimeout(timer2)
     const cr = range.headers.get('content-range') // "bytes 0-0/TOTAL"
     if (cr) {
@@ -54,6 +57,7 @@ async function getImageSize(url: string): Promise<number | null> {
     }
     return null
   } catch {
+    clearTimeout(timer2)
     return null
   }
 }
