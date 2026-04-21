@@ -18,8 +18,10 @@ interface Props {
  *   • article.thumbnail set   → image card  ≈ TALL px
  *   • article.thumbnail null  → text card   ≈ SHORT px
  */
-const TALL = 420   // image card (colour block + image + title/meta)
-const SHORT = 240  // text-only card (min-h-52 + title/meta)
+// Measured from real cards (column ~395px wide, og:image typically 16:9 → image ~165px,
+// but many logos/art are square/portrait → average closer to 260px, plus pt-10 block + text area):
+const TALL = 500   // image card: colour-block (≈300px) + text (≈130px) + gap (≈32px) + mb-8 (≈32px)
+const SHORT = 260  // text-only: min-h-52 (208px) + title/desc/meta (≈52px)
 
 export default function MasonryGrid({ articles, showCategory = false, cols = 3 }: Props) {
   if (!articles.length) {
