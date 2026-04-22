@@ -1,7 +1,8 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
-import MasonryGrid from './MasonryGrid'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import MasonryGrid, { MasonryGridHandle } from './MasonryGrid'
 import { Article } from '../types'
+import { buildColumns } from '../lib/masonry'
 import { useTranslation } from '../contexts/TranslationContext'
 import { ui } from '../lib/ui-i18n'
 
@@ -14,14 +15,17 @@ const PAGE_SIZE = 30
 
 export default function CategoryFeed({ category, showCategory = false }: Props) {
   const [articles, setArticles] = useState<Article[]>([])
+  const [columns, setColumns] = useState<Article[][]>([])
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [hasMore, setHasMore] = useState(true)
   const [cols, setCols] = useState(3)
+  const gridRef = useRef<MasonryGridHandle>(null)
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
+  // ── Responsive column count ──────────────────────────────────────────────
   useEffect(() => {
     const update = () => setCols(window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3)
     update()
@@ -29,16 +33,44 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     return () => window.removeEventListener('resize', update)
   }, [])
 
+  // ── Rebuild all columns on viewport resize ───────────────────────────────
+  // prevColsRef lets us distinguish a cols change from an articles change:
+  // only rebuild when cols itself changes, not on every article update.
+  const prevColsRef = useRef(cols)
+  useEffect(() => {
+    if (prevColsRef.current === cols || articles.length === 0) {
+      prevColsRef.current = cols
+      return
+    }
+    prevColsRef.current = cols
+    setColumns(buildColumns(articles, cols))
+  }, [cols, articles])
+
+  // ── Fetch ────────────────────────────────────────────────────────────────
   const fetchPage = useCallback(async (pageNum: number) => {
     setLoading(true)
     try {
       const res = await fetch(
         `/api/articles?category=${category}&limit=${PAGE_SIZE}&page=${pageNum}`,
-        { cache: 'no-store' }
+        { cache: 'no-store' },
       )
       const data = await res.json()
       const newArticles: Article[] = data.articles || []
-      setArticles(prev => pageNum === 1 ? newArticles : [...prev, ...newArticles])
+
+      if (pageNum === 1) {
+        // Initial load: full greedy from zero
+        setArticles(newArticles)
+        setColumns(buildColumns(newArticles, cols))
+      } else {
+        // Load More: read real column heights, distribute only new articles from there
+        const realHeights = gridRef.current?.getColumnHeights() ?? Array.from({ length: cols }, () => 0)
+        const newCols = buildColumns(newArticles, cols, realHeights)
+        setArticles(prev => [...prev, ...newArticles])
+        setColumns(prev =>
+          Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])]),
+        )
+      }
+
       setHasMore(newArticles.length > 0)
       setPage(pageNum)
       return newArticles
@@ -49,10 +81,11 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       setLoading(false)
       setInitialLoading(false)
     }
-  }, [category])
+  }, [category, cols])
 
   useEffect(() => {
     setArticles([])
+    setColumns([])
     setPage(0)
     setHasMore(true)
     setInitialLoading(true)
@@ -86,7 +119,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
   return (
     <div>
-      <MasonryGrid articles={articles} showCategory={showCategory} cols={cols} />
+      <MasonryGrid ref={gridRef} columns={columns} showCategory={showCategory} />
 
       {hasMore && (
         <div className="flex justify-center mt-10 mb-6">
