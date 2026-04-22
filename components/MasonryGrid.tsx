@@ -36,9 +36,9 @@ export default function MasonryGrid({ articles, showCategory = false, cols = 3 }
   }
 
   return (
-    <div className="flex gap-6 md:gap-8 items-start">
+    <div data-testid="masonry-grid" className="flex gap-6 md:gap-8 items-start">
       {columns.map((col, ci) => (
-        <div key={ci} className="flex-1 flex flex-col gap-6 md:gap-8">
+        <div key={ci} data-testid="masonry-col" className="flex-1 flex flex-col gap-6 md:gap-8">
           {col.map(article => (
             <ArticleCard key={article.id} article={article} showCategory={showCategory} />
           ))}

@@ -154,7 +154,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
   }
 
   return (
-    <div onClick={handleClick} className="cursor-pointer group mb-5 sm:mb-8 break-inside-avoid">
+    <div data-testid="article-card" onClick={handleClick} className="cursor-pointer group mb-5 sm:mb-8 break-inside-avoid">
       {imgReady ? (
         /* ── 有图模式：色块内嵌图片，文字在色块下方 ── */
         <>

@@ -8,7 +8,10 @@
     "start": "next start",
     "backfill-zh": "tsx scripts/backfill-zh.ts",
     "backfill-zh:repair": "tsx scripts/backfill-zh.ts --repair",
-    "backfill-thumbnails": "tsx scripts/backfill-thumbnails.ts"
+    "backfill-thumbnails": "tsx scripts/backfill-thumbnails.ts",
+    "test": "playwright test",
+    "test:visual": "playwright test tests/visual.spec.ts",
+    "test:update-baselines": "playwright test tests/visual.spec.ts --update-snapshots"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.2",
@@ -21,6 +24,7 @@
     "rss-parser": "^3.13.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/cheerio": "^0.22.35",
     "@types/node": "^20",
