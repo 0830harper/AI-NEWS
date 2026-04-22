@@ -141,7 +141,7 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from('articles')
     .select('*, sources(name, slug, category, home_url)')
-    .order(isLatest ? 'raw_score' : 'published_at', { ascending: false })
+    .order('published_at', { ascending: false })
     .neq('ai_category', 'irrelevant')  // 全局排除 irrelevant，任何页面都不显示
 
   if (isLatest) {
