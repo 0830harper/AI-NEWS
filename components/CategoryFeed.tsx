@@ -1,8 +1,8 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import MasonryGrid, { MasonryGridHandle } from './MasonryGrid'
 import { Article } from '../types'
-import { buildColumns, trimToBalance } from '../lib/masonry'
+import { buildColumns, SHORT } from '../lib/masonry'
 import { useTranslation } from '../contexts/TranslationContext'
 import { ui } from '../lib/ui-i18n'
 
@@ -22,6 +22,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [hasMore, setHasMore] = useState(true)
   const [cols, setCols] = useState(3)
   const gridRef = useRef<MasonryGridHandle>(null)
+  const pendingTrimRef = useRef(false)
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
@@ -33,6 +34,25 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     return () => window.removeEventListener('resize', update)
   }, [])
 
+  // ── DOM-based trim: after columns render, remove last card from tallest column
+  // if real height diff > SHORT/2. pendingTrimRef ensures this fires once per
+  // data load, never re-enters from its own setColumns call.
+  useLayoutEffect(() => {
+    if (!pendingTrimRef.current || !gridRef.current) return
+    pendingTrimRef.current = false
+    const heights = gridRef.current.getColumnHeights()
+    if (heights.every(h => h === 0)) return
+    const maxH = Math.max(...heights)
+    const minH = Math.min(...heights)
+    if (maxH - minH <= SHORT / 2) return
+    const maxIdx = heights.indexOf(maxH)
+    setColumns(prev => {
+      const result = prev.map(c => [...c])
+      if (result[maxIdx]?.length > 0) result[maxIdx].pop()
+      return result
+    })
+  }, [columns])
+
   // ── Rebuild all columns on viewport resize ───────────────────────────────
   // prevColsRef lets us distinguish a cols change from an articles change:
   // only rebuild when cols itself changes, not on every article update.
@@ -43,7 +63,8 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       return
     }
     prevColsRef.current = cols
-    setColumns(trimToBalance(buildColumns(articles, cols)))
+    pendingTrimRef.current = true
+    setColumns(buildColumns(articles, cols))
   }, [cols, articles])
 
   // ── Fetch ────────────────────────────────────────────────────────────────
@@ -60,16 +81,17 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       if (pageNum === 1) {
         // Initial load: full greedy from zero
         setArticles(newArticles)
-        setColumns(trimToBalance(buildColumns(newArticles, cols)))
+        pendingTrimRef.current = true
+        setColumns(buildColumns(newArticles, cols))
       } else {
         // Load More: read real column heights, distribute only new articles from there
         const realHeights = gridRef.current?.getColumnHeights() ?? Array.from({ length: cols }, () => 0)
         const newCols = buildColumns(newArticles, cols, realHeights)
         setArticles(prev => [...prev, ...newArticles])
-        setColumns(prev => {
-          const merged = Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])])
-          return trimToBalance(merged)
-        })
+        pendingTrimRef.current = true
+        setColumns(prev =>
+          Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])]),
+        )
       }
 
       setHasMore(newArticles.length > 0)
