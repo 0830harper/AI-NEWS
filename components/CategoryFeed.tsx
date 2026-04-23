@@ -13,10 +13,9 @@ interface Props {
 
 const PAGE_SIZE = 30
 const BALANCE_THRESHOLD = 200
-
-function layoutKey(cols: Article[][]): string {
-  return cols.map(c => c.map(a => a.id).join(',')).join('|')
-}
+// Max card-moves per article-set load. Each move fixes ~one card of drift;
+// 5 is far more than needed and guarantees termination regardless of layout.
+const MAX_BALANCE_PASSES = 5
 
 export default function CategoryFeed({ category, showCategory = false }: Props) {
   const [articles, setArticles] = useState<Article[]>([])
@@ -27,9 +26,11 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [hasMore, setHasMore] = useState(true)
   const [cols, setCols] = useState(3)
   const gridRef = useRef<MasonryGridHandle>(null)
-  // Oscillation guard: stores the layout key we last adjusted FROM so we
-  // never adjust the same layout twice (prevents A→B→A infinite loop).
-  const adjustedFrom = useRef('')
+  // Pass counter: reset when article fingerprint changes, incremented each
+  // card-move. Guarantees the adjustment loop terminates (≤ MAX_BALANCE_PASSES
+  // setState calls per article-set, regardless of layout oscillation patterns).
+  const balancePasses = useRef(0)
+  const balanceForKey = useRef('')
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
@@ -51,15 +52,17 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       return
     }
     prevColsRef.current = cols
-    adjustedFrom.current = ''
+    balancePasses.current = 0
+    balanceForKey.current = ''
     setColumns(buildColumns(articles, cols))
   }, [cols, articles])
 
   // ── Post-render balance correction ───────────────────────────────────────
-  // Fires after every columns render. Measures real DOM heights; if the
-  // tallest column exceeds the shortest by more than one card, moves one
-  // card across and re-renders. Repeats until balanced or oscillation is
-  // detected (adjustedFrom guard prevents A→B→A loops).
+  // Moves one card from the tallest to the shortest column if they differ by
+  // more than BALANCE_THRESHOLD px. Repeats until balanced.
+  // balancePasses + balanceForKey guarantee termination: the counter resets
+  // when the article set changes and is capped at MAX_BALANCE_PASSES, so this
+  // can never loop beyond that limit regardless of layout oscillation patterns.
   useLayoutEffect(() => {
     if (cols <= 1 || columns.length < 2) return
     const heights = gridRef.current?.getColumnHeights() ?? []
@@ -69,8 +72,13 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     const minH = Math.min(...heights)
     if (maxH - minH <= BALANCE_THRESHOLD) return
 
-    const key = layoutKey(columns)
-    if (adjustedFrom.current === key) return   // already tried this layout — stop
+    // Reset pass counter when the article set changes
+    const articleKey = articles.map(a => a.id).join(',')
+    if (balanceForKey.current !== articleKey) {
+      balanceForKey.current = articleKey
+      balancePasses.current = 0
+    }
+    if (balancePasses.current >= MAX_BALANCE_PASSES) return
 
     const tallest = heights.indexOf(maxH)
     const shortest = heights.indexOf(minH)
@@ -81,8 +89,8 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       next[shortest].push(card)
       return next
     })
-    adjustedFrom.current = key
-  }, [columns, cols])
+    balancePasses.current++
+  }, [columns, cols, articles])
 
   // ── Fetch ────────────────────────────────────────────────────────────────
   const fetchPage = useCallback(async (pageNum: number) => {
@@ -97,6 +105,8 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
       if (pageNum === 1) {
         // Initial load: full greedy from zero
+        balancePasses.current = 0
+        balanceForKey.current = ''
         setArticles(newArticles)
         setColumns(buildColumns(newArticles, cols))
       } else {
