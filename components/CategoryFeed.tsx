@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import MasonryGrid, { MasonryGridHandle } from './MasonryGrid'
 import { Article } from '../types'
 import { buildColumns } from '../lib/masonry'
@@ -12,6 +12,11 @@ interface Props {
 }
 
 const PAGE_SIZE = 30
+const BALANCE_THRESHOLD = 200
+
+function layoutKey(cols: Article[][]): string {
+  return cols.map(c => c.map(a => a.id).join(',')).join('|')
+}
 
 export default function CategoryFeed({ category, showCategory = false }: Props) {
   const [articles, setArticles] = useState<Article[]>([])
@@ -22,6 +27,9 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [hasMore, setHasMore] = useState(true)
   const [cols, setCols] = useState(3)
   const gridRef = useRef<MasonryGridHandle>(null)
+  // Oscillation guard: stores the layout key we last adjusted FROM so we
+  // never adjust the same layout twice (prevents A→B→A infinite loop).
+  const adjustedFrom = useRef('')
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
@@ -43,8 +51,38 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       return
     }
     prevColsRef.current = cols
+    adjustedFrom.current = ''
     setColumns(buildColumns(articles, cols))
   }, [cols, articles])
+
+  // ── Post-render balance correction ───────────────────────────────────────
+  // Fires after every columns render. Measures real DOM heights; if the
+  // tallest column exceeds the shortest by more than one card, moves one
+  // card across and re-renders. Repeats until balanced or oscillation is
+  // detected (adjustedFrom guard prevents A→B→A loops).
+  useLayoutEffect(() => {
+    if (cols <= 1 || columns.length < 2) return
+    const heights = gridRef.current?.getColumnHeights() ?? []
+    if (heights.length < cols || heights.some(h => h === 0)) return
+
+    const maxH = Math.max(...heights)
+    const minH = Math.min(...heights)
+    if (maxH - minH <= BALANCE_THRESHOLD) return
+
+    const key = layoutKey(columns)
+    if (adjustedFrom.current === key) return   // already tried this layout — stop
+
+    const tallest = heights.indexOf(maxH)
+    const shortest = heights.indexOf(minH)
+    setColumns(prev => {
+      const next = prev.map(c => [...c])
+      const card = next[tallest].pop()
+      if (!card) return prev
+      next[shortest].push(card)
+      return next
+    })
+    adjustedFrom.current = key
+  }, [columns, cols])
 
   // ── Fetch ────────────────────────────────────────────────────────────────
   const fetchPage = useCallback(async (pageNum: number) => {
