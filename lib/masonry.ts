@@ -4,6 +4,23 @@ export const TALL = 500   // image card estimated height
 export const SHORT = 260  // text-only card estimated height
 
 /**
+ * After greedy assignment, trim the last card from the tallest column if it
+ * sticks out by more than half a SHORT card vs the shortest column.
+ * Runs up to 2 passes so a 2-card overhang is also fixed.
+ * Purely estimate-based — no DOM measurement, no oscillation risk.
+ */
+export function trimToBalance(cols: Article[][]): Article[][] {
+  const result = cols.map(c => [...c])
+  const heights = result.map(col =>
+    col.reduce((h, a) => h + (a.thumbnail ? TALL : SHORT), 0),
+  )
+  const maxH = Math.max(...heights)
+  const minH = Math.min(...heights)
+  if (maxH - minH > SHORT / 2) result[heights.indexOf(maxH)].pop()
+  return result
+}
+
+/**
  * Greedy shortest-column assignment.
  * startHeights defaults to zeros (full rebuild); pass real DOM heights for
  * incremental Load More so new articles extend from actual column bottoms.

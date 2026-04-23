@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import MasonryGrid, { MasonryGridHandle } from './MasonryGrid'
 import { Article } from '../types'
-import { buildColumns } from '../lib/masonry'
+import { buildColumns, trimToBalance } from '../lib/masonry'
 import { useTranslation } from '../contexts/TranslationContext'
 import { ui } from '../lib/ui-i18n'
 
@@ -43,7 +43,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       return
     }
     prevColsRef.current = cols
-    setColumns(buildColumns(articles, cols))
+    setColumns(trimToBalance(buildColumns(articles, cols)))
   }, [cols, articles])
 
   // ── Fetch ────────────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       if (pageNum === 1) {
         // Initial load: full greedy from zero
         setArticles(newArticles)
-        setColumns(buildColumns(newArticles, cols))
+        setColumns(trimToBalance(buildColumns(newArticles, cols)))
       } else {
         // Load More: read real column heights, distribute only new articles from there
         const realHeights = gridRef.current?.getColumnHeights() ?? Array.from({ length: cols }, () => 0)
