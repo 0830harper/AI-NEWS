@@ -11,12 +11,15 @@ export const SHORT = 260  // text-only card estimated height
  */
 export function trimToBalance(cols: Article[][]): Article[][] {
   const result = cols.map(c => [...c])
-  const heights = result.map(col =>
-    col.reduce((h, a) => h + (a.thumbnail ? TALL : SHORT), 0),
-  )
-  const maxH = Math.max(...heights)
-  const minH = Math.min(...heights)
-  if (maxH - minH > SHORT / 2) result[heights.indexOf(maxH)].pop()
+  for (let pass = 0; pass < 5; pass++) {
+    const heights = result.map(col =>
+      col.reduce((h, a) => h + (a.thumbnail ? TALL : SHORT), 0),
+    )
+    const maxH = Math.max(...heights)
+    const minH = Math.min(...heights)
+    if (maxH - minH <= SHORT / 2) break
+    result[heights.indexOf(maxH)].pop()
+  }
   return result
 }
 

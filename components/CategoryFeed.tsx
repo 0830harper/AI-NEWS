@@ -66,9 +66,10 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
         const realHeights = gridRef.current?.getColumnHeights() ?? Array.from({ length: cols }, () => 0)
         const newCols = buildColumns(newArticles, cols, realHeights)
         setArticles(prev => [...prev, ...newArticles])
-        setColumns(prev =>
-          Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])]),
-        )
+        setColumns(prev => {
+          const merged = Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])])
+          return trimToBalance(merged)
+        })
       }
 
       setHasMore(newArticles.length > 0)
