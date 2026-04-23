@@ -11,6 +11,16 @@ function hasGarbageTitle(article: any): boolean {
   return qCount >= 4 && qCount / title.length > 0.3
 }
 
+function dedupeByTitle(articles: any[]): any[] {
+  const seen = new Set<string>()
+  return articles.filter(a => {
+    const key = (a.title || '').toLowerCase().trim()
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 function diversify(articles: any[], maxPerSource: number): any[] {
   const countMap: Record<number, number> = {}
   const result: any[] = []
@@ -161,12 +171,14 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const cleaned = (data || [])
-    .map((a: any) => ({
-      ...a,
-      title: (a.title || '').replace(/\?{2,}/g, '').replace(/^\?+/, '').trim()
-    }))
-    .filter((a: any) => !hasGarbageTitle(a))
+  const cleaned = dedupeByTitle(
+    (data || [])
+      .map((a: any) => ({
+        ...a,
+        title: (a.title || '').replace(/\?{2,}/g, '').replace(/^\?+/, '').trim()
+      }))
+      .filter((a: any) => !hasGarbageTitle(a))
+  )
 
   // Pick 页：全量排序后按页切片，确保无重复
   const result = isLatest
