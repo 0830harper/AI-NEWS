@@ -25,6 +25,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const gridRef = useRef<MasonryGridHandle>(null)
   const pendingTrimRef = useRef(false)
   const trimPassCountRef = useRef(0)
+  const lateCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
@@ -44,6 +45,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       return
     }
     prevColsRef.current = cols
+    if (lateCheckTimerRef.current) clearTimeout(lateCheckTimerRef.current)
     pendingTrimRef.current = true
     trimPassCountRef.current = 0
     setColumns(buildColumns(articles, cols))
@@ -62,9 +64,26 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       resolved = true
       clearTimeout(timer)
 
+      const scheduleLateCheck = () => {
+        lateCheckTimerRef.current = setTimeout(() => {
+          if (pendingTrimRef.current || !gridRef.current) return
+          const h = gridRef.current.getColumnHeights()
+          const maxH2 = Math.max(...h)
+          const minH2 = Math.min(...h)
+          if (maxH2 - minH2 <= SHORT / 2) return
+          const maxIdx2 = h.indexOf(maxH2)
+          setColumns(prev => {
+            const result = prev.map(c => [...c])
+            if (result[maxIdx2]?.length > 0) result[maxIdx2].pop()
+            return result
+          })
+        }, 2500)
+      }
+
       if (!gridRef.current || trimPassCountRef.current >= 3) {
         pendingTrimRef.current = false
         trimPassCountRef.current = 0
+        scheduleLateCheck()
         return
       }
 
@@ -74,9 +93,10 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       const maxH = Math.max(...heights)
       const minH = Math.min(...heights)
       if (maxH - minH <= SHORT / 2) {
-        // balanced — done
+        // balanced — done, but still schedule a late check for slow images
         pendingTrimRef.current = false
         trimPassCountRef.current = 0
+        scheduleLateCheck()
         return
       }
 
@@ -124,6 +144,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
       if (pageNum === 1) {
         setArticles(newArticles)
+        if (lateCheckTimerRef.current) clearTimeout(lateCheckTimerRef.current)
         pendingTrimRef.current = true
         trimPassCountRef.current = 0
         setColumns(buildColumns(newArticles, cols))
@@ -131,6 +152,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
         const realHeights = gridRef.current?.getColumnHeights() ?? Array.from({ length: cols }, () => 0)
         const newCols = buildColumns(newArticles, cols, realHeights)
         setArticles(prev => [...prev, ...newArticles])
+        if (lateCheckTimerRef.current) clearTimeout(lateCheckTimerRef.current)
         pendingTrimRef.current = true
         trimPassCountRef.current = 0
         setColumns(prev =>
