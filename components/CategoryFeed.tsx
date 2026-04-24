@@ -23,6 +23,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [cols, setCols] = useState(3)
   const gridRef = useRef<MasonryGridHandle>(null)
   const pendingTrimRef = useRef(false)
+  const trimPassRef = useRef(0)
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
@@ -44,7 +45,10 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     if (heights.every(h => h === 0)) return
     const maxH = Math.max(...heights)
     const minH = Math.min(...heights)
-    if (maxH - minH <= SHORT / 2) return
+    if (maxH - minH <= SHORT / 2) return       // balanced — stop
+    if (trimPassRef.current >= 3) return        // safety cap — stop
+    trimPassRef.current++
+    pendingTrimRef.current = true               // allow another pass
     const maxIdx = heights.indexOf(maxH)
     setColumns(prev => {
       const result = prev.map(c => [...c])
@@ -64,6 +68,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     }
     prevColsRef.current = cols
     pendingTrimRef.current = true
+    trimPassRef.current = 0
     setColumns(buildColumns(articles, cols))
   }, [cols, articles])
 
@@ -82,6 +87,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
         // Initial load: full greedy from zero
         setArticles(newArticles)
         pendingTrimRef.current = true
+        trimPassRef.current = 0
         setColumns(buildColumns(newArticles, cols))
       } else {
         // Load More: read real column heights, distribute only new articles from there
@@ -89,6 +95,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
         const newCols = buildColumns(newArticles, cols, realHeights)
         setArticles(prev => [...prev, ...newArticles])
         pendingTrimRef.current = true
+        trimPassRef.current = 0
         setColumns(prev =>
           Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])]),
         )
