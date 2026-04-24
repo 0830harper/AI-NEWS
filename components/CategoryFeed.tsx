@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import MasonryGrid, { MasonryGridHandle } from './MasonryGrid'
 import { Article } from '../types'
-import { buildColumns, SHORT, TALL } from '../lib/masonry'
+import { buildColumnsExact, SHORT, TALL } from '../lib/masonry'
 import { useTranslation } from '../contexts/TranslationContext'
 import { ui } from '../lib/ui-i18n'
 
@@ -12,6 +12,45 @@ interface Props {
 }
 
 const PAGE_SIZE = 30
+
+// ── Height estimation ─────────────────────────────────────────────────────────
+// ArticleCard image layout: pt-10 (40px) top pad inside color block,
+// px-10 (40px each side = 80px) horizontal pad, then text block below.
+const COL_SIDE_PAD = 80   // px-10 × 2
+const CARD_TOP_PAD = 40   // pt-10
+const TEXT_BLOCK   = 100  // title + source/date row below color block
+
+function estimateColWidth(numCols: number): number {
+  // Rough column widths based on breakpoint:
+  // 3-col ≈ 380px, 2-col ≈ 390px, 1-col ≈ 600px
+  return numCols === 1 ? 600 : 390
+}
+
+function getArticleHeight(article: Article, colWidth: number): number {
+  if (article.thumbnail && article.img_width && article.img_height && article.img_width > 0) {
+    const imgW = colWidth - COL_SIDE_PAD
+    const imgH = (article.img_height / article.img_width) * imgW
+    return CARD_TOP_PAD + imgH + TEXT_BLOCK
+  }
+  return article.thumbnail ? TALL : SHORT
+}
+
+function layoutColumns(
+  articles: Article[],
+  numCols: number,
+  startHeights?: number[],
+): Article[][] {
+  const colWidth = estimateColWidth(numCols)
+  const heights = articles.map(a => getArticleHeight(a, colWidth))
+  return buildColumnsExact(
+    articles,
+    numCols,
+    heights,
+    startHeights ?? Array.from({ length: numCols }, () => 0),
+  )
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function CategoryFeed({ category, showCategory = false }: Props) {
   const [articles, setArticles] = useState<Article[]>([])
@@ -23,9 +62,6 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [cols, setCols] = useState(3)
 
   const gridRef = useRef<MasonryGridHandle>(null)
-  const pendingTrimRef = useRef(false)
-  const trimPassCountRef = useRef(0)
-  const lateCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
@@ -37,7 +73,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     return () => window.removeEventListener('resize', update)
   }, [])
 
-  // ── Rebuild all columns on viewport resize ───────────────────────────────
+  // ── Rebuild columns on viewport resize ──────────────────────────────────
   const prevColsRef = useRef(cols)
   useEffect(() => {
     if (prevColsRef.current === cols || articles.length === 0) {
@@ -45,91 +81,8 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       return
     }
     prevColsRef.current = cols
-    if (lateCheckTimerRef.current) clearTimeout(lateCheckTimerRef.current)
-    pendingTrimRef.current = true
-    trimPassCountRef.current = 0
-    setColumns(buildColumns(articles, cols))
+    setColumns(layoutColumns(articles, cols))
   }, [cols, articles])
-
-  // ── Image-wait trim ──────────────────────────────────────────────────────
-  // After columns render, waits for all grid images to load (or 800ms timeout),
-  // then reads real column heights and trims tallest column up to 3 passes.
-  useEffect(() => {
-    if (!pendingTrimRef.current) return
-
-    let resolved = false
-
-    const doTrim = () => {
-      if (resolved) return
-      resolved = true
-      clearTimeout(timer)
-
-      const scheduleLateCheck = () => {
-        lateCheckTimerRef.current = setTimeout(() => {
-          if (pendingTrimRef.current || !gridRef.current) return
-          const h = gridRef.current.getColumnHeights()
-          const maxH2 = Math.max(...h)
-          const minH2 = Math.min(...h)
-          if (maxH2 - minH2 <= SHORT / 2) return
-          const maxIdx2 = h.indexOf(maxH2)
-          setColumns(prev => {
-            const result = prev.map(c => [...c])
-            if (result[maxIdx2]?.length > 0) result[maxIdx2].pop()
-            return result
-          })
-        }, 2500)
-      }
-
-      if (!gridRef.current || trimPassCountRef.current >= 3) {
-        pendingTrimRef.current = false
-        trimPassCountRef.current = 0
-        scheduleLateCheck()
-        return
-      }
-
-      const heights = gridRef.current.getColumnHeights()
-      if (heights.every(h => h === 0)) { pendingTrimRef.current = false; return }
-
-      const maxH = Math.max(...heights)
-      const minH = Math.min(...heights)
-      if (maxH - minH <= SHORT / 2) {
-        // balanced — done, but still schedule a late check for slow images
-        pendingTrimRef.current = false
-        trimPassCountRef.current = 0
-        scheduleLateCheck()
-        return
-      }
-
-      // Remove one card, stay pending so the next render triggers another check
-      trimPassCountRef.current++
-      const maxIdx = heights.indexOf(maxH)
-      setColumns(prev => {
-        const result = prev.map(c => [...c])
-        if (result[maxIdx]?.length > 0) result[maxIdx].pop()
-        return result
-      })
-    }
-
-    const timer = setTimeout(doTrim, 800)
-
-    const gridEl = document.querySelector('[data-testid="masonry-grid"]')
-    const imgs = gridEl ? Array.from(gridEl.querySelectorAll<HTMLImageElement>('img')) : []
-    let pending = imgs.filter(img => !img.complete).length
-
-    if (pending === 0) {
-      doTrim()
-    } else {
-      for (const img of imgs) {
-        if (!img.complete) {
-          const onSettle = () => { pending--; if (pending === 0) doTrim() }
-          img.addEventListener('load', onSettle, { once: true })
-          img.addEventListener('error', onSettle, { once: true })
-        }
-      }
-    }
-
-    return () => { resolved = true; clearTimeout(timer) }
-  }, [columns])
 
   // ── Fetch ────────────────────────────────────────────────────────────────
   const fetchPage = useCallback(async (pageNum: number) => {
@@ -144,17 +97,12 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
       if (pageNum === 1) {
         setArticles(newArticles)
-        if (lateCheckTimerRef.current) clearTimeout(lateCheckTimerRef.current)
-        pendingTrimRef.current = true
-        trimPassCountRef.current = 0
-        setColumns(buildColumns(newArticles, cols))
+        setColumns(layoutColumns(newArticles, cols))
       } else {
+        // Use real DOM heights so new articles extend from actual column bottoms
         const realHeights = gridRef.current?.getColumnHeights() ?? Array.from({ length: cols }, () => 0)
-        const newCols = buildColumns(newArticles, cols, realHeights)
+        const newCols = layoutColumns(newArticles, cols, realHeights)
         setArticles(prev => [...prev, ...newArticles])
-        if (lateCheckTimerRef.current) clearTimeout(lateCheckTimerRef.current)
-        pendingTrimRef.current = true
-        trimPassCountRef.current = 0
         setColumns(prev =>
           Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])]),
         )

@@ -3,6 +3,7 @@ import { calcHeatScore } from '../lib/heat'
 import { randomColor } from '../lib/colors'
 import { hashUrl } from '../lib/utils'
 import { extractOgImage, isLogoUrl as isLogoUrlLib } from '../lib/og-image'
+import { enrichWithImageSizes } from '../lib/image-size'
 import { RssFetcher } from './rss/generic'
 import { HackerNewsFetcher } from './api/hackernews'
 import { RedditFetcher } from './api/reddit'
@@ -193,6 +194,8 @@ async function saveArticle(sourceId: number, article: FetchedArticle, heatScore:
     url_hash: urlHash,
     author: article.author || null,
     thumbnail: article.thumbnail || null,
+    img_width: article.img_width ?? null,
+    img_height: article.img_height ?? null,
     raw_score: article.raw_score,
     heat_score: heatScore,
     card_color: randomColor(),
@@ -470,6 +473,7 @@ export async function fetchByCategory(category: string) {
       const articles = await fetcher()
 
       await enrichWithOgImages(articles)
+      await enrichWithImageSizes(articles)
       await enrichWithHnPoints(articles)
 
       // AI 过滤：去掉与 AI/设计/科技无关的内容
@@ -542,6 +546,7 @@ export async function fetchAll() {
 
       // 补充 og:image（对没有缩略图的文章）
       await enrichWithOgImages(articles)
+      await enrichWithImageSizes(articles)
 
       // 用 HN Algolia 反查 points 作为热度
       await enrichWithHnPoints(articles)

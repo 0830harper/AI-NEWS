@@ -10,6 +10,8 @@ export interface Article {
   url_hash: string
   author: string | null
   thumbnail: string | null
+  img_width?: number | null
+  img_height?: number | null
   published_at: string
   fetched_at: string
   raw_score: number
@@ -48,6 +50,8 @@ export interface FetchedArticle {
   url: string
   author: string | null
   thumbnail: string | null
+  img_width?: number | null
+  img_height?: number | null
   published_at: Date
   raw_score: number
   tags: string[]
