@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import MasonryGrid, { MasonryGridHandle } from './MasonryGrid'
 import ArticleCard from './ArticleCard'
 import { Article } from '../types'
@@ -32,6 +32,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
   const gridRef = useRef<MasonryGridHandle>(null)
   const measureRefs = useRef<(HTMLDivElement | null)[]>([])
+  const measureContainerRef = useRef<HTMLDivElement>(null)
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
@@ -55,37 +56,60 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   }, [cols, articles])
 
   // ── Measurement effect ───────────────────────────────────────────────────
-  // After hidden cards render, reads real offsetHeight of each card,
-  // then builds columns with exact heights — no estimate drift.
-  useLayoutEffect(() => {
+  // Waits for all images in the hidden container to load (or 800ms timeout),
+  // then reads real offsetHeight of each card and builds columns with true heights.
+  useEffect(() => {
     if (!measureTask || measureTask.articles.length === 0) return
-    const heights = measureRefs.current
-      .slice(0, measureTask.articles.length)
-      .map((el, i) => el?.offsetHeight || (measureTask.articles[i]?.thumbnail ? 500 : 260))
-    if (heights.every(h => h === 0)) return
 
-    const newCols = buildColumnsExact(
-      measureTask.articles,
-      cols,
-      heights,
-      measureTask.startHeights.length > 0 ? measureTask.startHeights : undefined,
-    )
+    let resolved = false
 
-    if (measureTask.mode === 'initial') {
-      setColumns(newCols)
-      setInitialLoading(false)
-      setLoading(false)
-    } else if (measureTask.mode === 'append') {
-      setColumns(prev =>
-        Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])]),
+    const measure = () => {
+      if (resolved) return
+      resolved = true
+      clearTimeout(timer)
+
+      const heights = measureRefs.current
+        .slice(0, measureTask.articles.length)
+        .map((el, i) => el?.offsetHeight || (measureTask.articles[i]?.thumbnail ? 500 : 260))
+
+      const newCols = buildColumnsExact(
+        measureTask.articles,
+        cols,
+        heights,
+        measureTask.startHeights.length > 0 ? measureTask.startHeights : undefined,
       )
-      setLoading(false)
-    } else {
-      // rebuild on resize — don't touch loading state
-      setColumns(newCols)
+
+      if (measureTask.mode === 'initial') {
+        setColumns(newCols)
+        setInitialLoading(false)
+        setLoading(false)
+      } else if (measureTask.mode === 'append') {
+        setColumns(prev =>
+          Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])]),
+        )
+        setLoading(false)
+      } else {
+        setColumns(newCols)
+      }
+
+      setMeasureTask(null)
     }
 
-    setMeasureTask(null)
+    const timer = setTimeout(measure, 800)
+
+    const imgs = measureContainerRef.current?.querySelectorAll('img') ?? []
+    let pending = 0
+    for (const img of imgs) {
+      if (!img.complete) {
+        pending++
+        const onSettle = () => { pending--; if (pending === 0) measure() }
+        img.addEventListener('load', onSettle, { once: true })
+        img.addEventListener('error', onSettle, { once: true })
+      }
+    }
+    if (pending === 0) measure()
+
+    return () => { resolved = true; clearTimeout(timer) }
   }, [measureTask, cols])
 
   // ── Fetch ────────────────────────────────────────────────────────────────
@@ -149,6 +173,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       {/* Hidden pre-render: cards at correct column width so offsetHeight is accurate */}
       {measureTask && (
         <div
+          ref={measureContainerRef}
           style={{
             position: 'absolute',
             visibility: 'hidden',
