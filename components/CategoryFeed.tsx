@@ -62,7 +62,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       resolved = true
       clearTimeout(timer)
 
-      if (!gridRef.current || trimPassCountRef.current >= 5) {
+      if (!gridRef.current || trimPassCountRef.current >= 3) {
         pendingTrimRef.current = false
         trimPassCountRef.current = 0
         return
