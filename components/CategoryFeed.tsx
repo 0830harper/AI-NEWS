@@ -46,7 +46,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     const maxH = Math.max(...heights)
     const minH = Math.min(...heights)
     if (maxH - minH <= SHORT / 2) return       // balanced — stop
-    if (trimPassRef.current >= 3) return        // safety cap — stop
+    if (trimPassRef.current >= 5) return        // safety cap — stop
     trimPassRef.current++
     pendingTrimRef.current = true               // allow another pass
     const maxIdx = heights.indexOf(maxH)
