@@ -24,6 +24,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
   const gridRef = useRef<MasonryGridHandle>(null)
   const pendingTrimRef = useRef(false)
+  const trimPassCountRef = useRef(0)
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
@@ -44,6 +45,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     }
     prevColsRef.current = cols
     pendingTrimRef.current = true
+    trimPassCountRef.current = 0
     setColumns(buildColumns(articles, cols))
   }, [cols, articles])
 
@@ -59,25 +61,31 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       if (resolved) return
       resolved = true
       clearTimeout(timer)
-      pendingTrimRef.current = false
 
-      if (!gridRef.current) return
+      if (!gridRef.current || trimPassCountRef.current >= 5) {
+        pendingTrimRef.current = false
+        trimPassCountRef.current = 0
+        return
+      }
+
       const heights = gridRef.current.getColumnHeights()
-      if (heights.every(h => h === 0)) return
+      if (heights.every(h => h === 0)) { pendingTrimRef.current = false; return }
 
+      const maxH = Math.max(...heights)
+      const minH = Math.min(...heights)
+      if (maxH - minH <= SHORT / 2) {
+        // balanced — done
+        pendingTrimRef.current = false
+        trimPassCountRef.current = 0
+        return
+      }
+
+      // Remove one card, stay pending so the next render triggers another check
+      trimPassCountRef.current++
+      const maxIdx = heights.indexOf(maxH)
       setColumns(prev => {
         const result = prev.map(c => [...c])
-        const workH = [...heights]
-        for (let pass = 0; pass < 3; pass++) {
-          const maxH = Math.max(...workH)
-          const minH = Math.min(...workH)
-          if (maxH - minH <= SHORT / 2) break
-          const maxIdx = workH.indexOf(maxH)
-          if (!result[maxIdx]?.length) break
-          const last = result[maxIdx][result[maxIdx].length - 1]
-          workH[maxIdx] -= last.thumbnail ? TALL : SHORT
-          result[maxIdx].pop()
-        }
+        if (result[maxIdx]?.length > 0) result[maxIdx].pop()
         return result
       })
     }
@@ -117,12 +125,14 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
       if (pageNum === 1) {
         setArticles(newArticles)
         pendingTrimRef.current = true
+        trimPassCountRef.current = 0
         setColumns(buildColumns(newArticles, cols))
       } else {
         const realHeights = gridRef.current?.getColumnHeights() ?? Array.from({ length: cols }, () => 0)
         const newCols = buildColumns(newArticles, cols, realHeights)
         setArticles(prev => [...prev, ...newArticles])
         pendingTrimRef.current = true
+        trimPassCountRef.current = 0
         setColumns(prev =>
           Array.from({ length: cols }, (_, i) => [...(prev[i] ?? []), ...(newCols[i] ?? [])]),
         )
