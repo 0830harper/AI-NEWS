@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../lib/supabase'
 import { getImageDimensions } from '../../../lib/image-size'
 
-const BATCH = 20
+const BATCH = 25       // probe 25 concurrently
+const LIMIT = 25       // process 25 articles per call (fits in Vercel 10s limit)
 const SECRET = process.env.CRON_SECRET
 
 export async function POST(req: NextRequest) {
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
     .select('id, thumbnail')
     .not('thumbnail', 'is', null)
     .is('img_width', null)
-    .limit(500)
+    .limit(LIMIT)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!data || data.length === 0) return NextResponse.json({ done: true, updated: 0 })
@@ -43,6 +44,6 @@ export async function POST(req: NextRequest) {
     failed += batch.length - updates.length
   }
 
-  const remaining = data.length === 500 ? 'more rows remaining — call again' : 'all done'
+  const remaining = data.length === LIMIT ? 'more rows remaining — call again' : 'all done'
   return NextResponse.json({ updated, failed, remaining })
 }
