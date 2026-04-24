@@ -21,6 +21,27 @@ export function trimToBalance(cols: Article[][]): Article[][] {
 }
 
 /**
+ * Greedy shortest-column assignment using exact measured heights per article.
+ * Used after hidden pre-render measurement so distribution is based on real heights.
+ */
+export function buildColumnsExact(
+  articles: Article[],
+  numCols: number,
+  articleHeights: number[],
+  startHeights: number[] = Array.from({ length: numCols }, () => 0),
+): Article[][] {
+  const cols: Article[][] = Array.from({ length: numCols }, () => [])
+  const heights = [...startHeights]
+  for (let i = 0; i < articles.length; i++) {
+    let min = 0
+    for (let c = 1; c < numCols; c++) if (heights[c] < heights[min]) min = c
+    cols[min].push(articles[i])
+    heights[min] += articleHeights[i] ?? (articles[i].thumbnail ? TALL : SHORT)
+  }
+  return cols
+}
+
+/**
  * Greedy shortest-column assignment.
  * startHeights defaults to zeros (full rebuild); pass real DOM heights for
  * incremental Load More so new articles extend from actual column bottoms.
