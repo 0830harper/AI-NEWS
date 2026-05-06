@@ -30,18 +30,24 @@ export async function POST(req: NextRequest) {
     const results = await Promise.allSettled(
       batch.map((a: { id: number; thumbnail: string }) => getImageDimensions(a.thumbnail))
     )
-    const updates = results
-      .map((r, idx) => ({ id: batch[idx].id, dims: r.status === 'fulfilled' ? r.value : null }))
-      .filter(x => x.dims !== null)
-
-    for (const { id, dims } of updates) {
-      await (supabaseAdmin as any)
-        .from('articles')
-        .update({ img_width: dims!.width, img_height: dims!.height })
-        .eq('id', id)
-      updated++
+    for (let j = 0; j < batch.length; j++) {
+      const r = results[j]
+      const dims = r.status === 'fulfilled' ? r.value : null
+      if (dims) {
+        await (supabaseAdmin as any)
+          .from('articles')
+          .update({ img_width: dims.width, img_height: dims.height })
+          .eq('id', batch[j].id)
+        updated++
+      } else {
+        // Mark as failed with 0 so it's excluded from future runs
+        await (supabaseAdmin as any)
+          .from('articles')
+          .update({ img_width: 0, img_height: 0 })
+          .eq('id', batch[j].id)
+        failed++
+      }
     }
-    failed += batch.length - updates.length
   }
 
   const remaining = data.length === LIMIT ? 'more rows remaining — call again' : 'all done'
