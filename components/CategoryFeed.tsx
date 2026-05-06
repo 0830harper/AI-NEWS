@@ -20,10 +20,15 @@ const COL_SIDE_PAD = 80   // px-10 × 2
 const CARD_TOP_PAD = 40   // pt-10
 const TEXT_BLOCK   = 100  // title + source/date row below color block
 
-function estimateColWidth(numCols: number): number {
-  // Rough column widths based on breakpoint:
-  // 3-col ≈ 380px, 2-col ≈ 390px, 1-col ≈ 600px
-  return numCols === 1 ? 600 : 390
+function computeColWidth(numCols: number): number {
+  if (typeof window === 'undefined') return numCols === 1 ? 600 : 390
+  const vw = window.innerWidth
+  // Matches layout.tsx: max-w-7xl (1280px), px-3 sm:px-4 md:px-6
+  const sidePad = vw >= 768 ? 24 : vw >= 640 ? 16 : 12
+  const containerWidth = Math.min(vw, 1280) - sidePad * 2
+  // Matches MasonryGrid: gap-6 md:gap-8
+  const gap = vw >= 768 ? 32 : 24
+  return (containerWidth - (numCols - 1) * gap) / numCols
 }
 
 function getArticleHeight(article: Article, colWidth: number): number {
@@ -40,7 +45,7 @@ function layoutColumns(
   numCols: number,
   startHeights?: number[],
 ): Article[][] {
-  const colWidth = estimateColWidth(numCols)
+  const colWidth = computeColWidth(numCols)
   const heights = articles.map(a => getArticleHeight(a, colWidth))
   return buildColumnsExact(
     articles,
