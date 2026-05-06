@@ -46,13 +46,36 @@ function layoutColumns(
   startHeights?: number[],
 ): Article[][] {
   const colWidth = computeColWidth(numCols)
-  const heights = articles.map(a => getArticleHeight(a, colWidth))
-  return buildColumnsExact(
+  const articleHeights = articles.map(a => getArticleHeight(a, colWidth))
+  let cols = buildColumnsExact(
     articles,
     numCols,
-    heights,
+    articleHeights,
     startHeights ?? Array.from({ length: numCols }, () => 0),
   )
+
+  // Balance pass: if the tallest column overhangs the shortest by more than
+  // half a SHORT card, move its last card to the shortest column.
+  // Up to 2 passes — no cards are removed, just relocated.
+  for (let pass = 0; pass < 2; pass++) {
+    const colHeights = cols.map(col =>
+      col.reduce((h, a) => h + getArticleHeight(a, colWidth), 0),
+    )
+    const maxH = Math.max(...colHeights)
+    const minH = Math.min(...colHeights)
+    if (maxH - minH <= SHORT / 2) break
+    const maxIdx = colHeights.indexOf(maxH)
+    const minIdx = colHeights.indexOf(minH)
+    if (cols[maxIdx].length <= 1) break
+    const moved = cols[maxIdx][cols[maxIdx].length - 1]
+    cols = cols.map((col, i) => {
+      if (i === maxIdx) return col.slice(0, -1)
+      if (i === minIdx) return [...col, moved]
+      return col
+    })
+  }
+
+  return cols
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
