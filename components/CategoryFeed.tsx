@@ -16,9 +16,12 @@ const PAGE_SIZE = 30
 // ── Height estimation ─────────────────────────────────────────────────────────
 // ArticleCard image layout: pt-10 (40px) top pad inside color block,
 // px-10 (40px each side = 80px) horizontal pad, then text block below.
-const COL_SIDE_PAD = 80   // px-10 × 2
-const CARD_TOP_PAD = 40   // pt-10
-const TEXT_BLOCK   = 100  // title + source/date row below color block
+const COL_SIDE_PAD   = 80   // px-10 × 2
+const CARD_TOP_PAD   = 40   // pt-10
+const TEXT_BLOCK     = 100  // title + source/date row below color block
+// Fallback when no stored dimensions: most og:images are 16:9 or 2:1 landscape.
+// 320px is far more representative than TALL=500 which causes severe overestimation.
+const THUMB_FALLBACK = 320
 
 function computeColWidth(numCols: number): number {
   if (typeof window === 'undefined') return numCols === 1 ? 600 : 390
@@ -37,7 +40,7 @@ function getArticleHeight(article: Article, colWidth: number): number {
     const imgH = (article.img_height / article.img_width) * imgW
     return CARD_TOP_PAD + imgH + TEXT_BLOCK
   }
-  return article.thumbnail ? TALL : SHORT
+  return article.thumbnail ? THUMB_FALLBACK : SHORT
 }
 
 function layoutColumns(
@@ -47,35 +50,12 @@ function layoutColumns(
 ): Article[][] {
   const colWidth = computeColWidth(numCols)
   const articleHeights = articles.map(a => getArticleHeight(a, colWidth))
-  let cols = buildColumnsExact(
+  return buildColumnsExact(
     articles,
     numCols,
     articleHeights,
     startHeights ?? Array.from({ length: numCols }, () => 0),
   )
-
-  // Balance pass: if the tallest column overhangs the shortest by more than
-  // half a SHORT card, move its last card to the shortest column.
-  // Up to 2 passes — no cards are removed, just relocated.
-  for (let pass = 0; pass < 2; pass++) {
-    const colHeights = cols.map(col =>
-      col.reduce((h, a) => h + getArticleHeight(a, colWidth), 0),
-    )
-    const maxH = Math.max(...colHeights)
-    const minH = Math.min(...colHeights)
-    if (maxH - minH <= SHORT / 2) break
-    const maxIdx = colHeights.indexOf(maxH)
-    const minIdx = colHeights.indexOf(minH)
-    if (cols[maxIdx].length <= 1) break
-    const moved = cols[maxIdx][cols[maxIdx].length - 1]
-    cols = cols.map((col, i) => {
-      if (i === maxIdx) return col.slice(0, -1)
-      if (i === minIdx) return [...col, moved]
-      return col
-    })
-  }
-
-  return cols
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
