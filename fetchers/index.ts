@@ -436,6 +436,9 @@ const FETCHER_MAP: Record<string, () => Promise<FetchedArticle[]>> = {
     imgSelector: 'img',
     baseUrl: 'https://www.kaggle.com',
   }).fetch(),
+  'simon-willison':    () => new RssFetcher('https://simonwillison.net/atom/everything/').fetch(),
+  'pragmatic-engineer':() => new RssFetcher('https://newsletter.pragmaticengineer.com/feed').fetch(),
+  'latent-space':      () => new RssFetcher('https://www.latent.space/feed').fetch(),
 }
 
 /** Normalize a title for deduplication: lowercase, strip punctuation, collapse spaces, first 80 chars */
