@@ -62,6 +62,24 @@ function isFundingNews(title: string): boolean {
   return FUNDING_PATTERNS.some(re => re.test(title))
 }
 
+// 招聘/职位关键词：命中则直接判 irrelevant
+const JOB_PATTERNS = [
+  /\b(?:we'?re\s+)?hiring\b/i,
+  /\bjob\s+(?:opening|listing|posting|opportunity|offer)\b/i,
+  /\bopen\s+(?:position|role)\b/i,
+  /\b(?:full[- ]time|part[- ]time)\s+(?:position|role|job)\b/i,
+  /\bapply\s+(?:now|today|here)\b/i,
+  /\bcareer\s+opportunit/i,
+  /招聘/,
+  /求职/,
+  /职位招募/,
+]
+
+/** Returns true if title looks like a job listing */
+function isJobPosting(title: string): boolean {
+  return JOB_PATTERNS.some(re => re.test(title))
+}
+
 /** Use SiliconFlow Qwen to classify an article into a specific category.
  *  Returns: 'app' | 'design' | 'uxui' | 'tech' | 'irrelevant' */
 async function classifyArticle(title: string, description?: string | null): Promise<string> {
@@ -120,11 +138,13 @@ Article: ${text}`,
 async function filterIrrelevant(articles: FetchedArticle[]): Promise<FetchedArticle[]> {
   const results: FetchedArticle[] = []
 
-  // Step 1: 融资新闻关键词预过滤，直接跳过，不调 AI
+  // Step 1: 关键词预过滤（融资/招聘），直接跳过，不调 AI
   const toClassify: FetchedArticle[] = []
   for (const article of articles) {
     if (isFundingNews(article.title)) {
       console.log(`  ✗ filtered (funding): ${article.title.slice(0, 60)}`)
+    } else if (isJobPosting(article.title)) {
+      console.log(`  ✗ filtered (job): ${article.title.slice(0, 60)}`)
     } else {
       toClassify.push(article)
     }
