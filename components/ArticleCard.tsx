@@ -167,6 +167,7 @@ export default function ArticleCard({ article, showCategory = false }: Props) {
                 src={thumbSrc!}
                 alt=""
                 className="w-full block"
+                onError={() => setImgReady(false)}
               />
             </div>
           </div>
