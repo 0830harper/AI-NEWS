@@ -70,6 +70,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
   const [cols, setCols] = useState(3)
 
   const gridRef = useRef<MasonryGridHandle>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
   const { isZh, translateArticles } = useTranslation()
   const t = ui(isZh)
 
@@ -141,6 +142,33 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     if (isZh && articles.length > 0) void translateArticles(articles)
   }, [isZh, articles, translateArticles])
 
+  // ── Infinite scroll via IntersectionObserver ─────────────────────────────
+  const loadingRef = useRef(loading)
+  const hasMoreRef = useRef(hasMore)
+  const pageRef = useRef(page)
+  loadingRef.current = loading
+  hasMoreRef.current = hasMore
+  pageRef.current = page
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreRef.current && !loadingRef.current) {
+          fetchPage(pageRef.current + 1).then(newArticles => {
+            if (isZh && newArticles.length > 0) void translateArticles(newArticles)
+          })
+        }
+      },
+      { rootMargin: '300px' }, // start loading 300px before sentinel enters viewport
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [fetchPage, isZh, translateArticles])
+
   if (initialLoading) {
     return (
       <div className="flex justify-center py-24">
@@ -157,31 +185,16 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
     )
   }
 
-  const handleLoadMore = async () => {
-    const newArticles = await fetchPage(page + 1)
-    if (isZh && newArticles.length > 0) void translateArticles(newArticles)
-  }
-
   return (
     <div>
       <MasonryGrid ref={gridRef} columns={columns} showCategory={showCategory} />
 
-      {hasMore && (
-        <div className="flex justify-center mt-10 mb-6">
-          <button
-            onClick={handleLoadMore}
-            disabled={loading}
-            className="transition-transform duration-150 hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2 px-8 py-2.5 text-sm text-gray-500">
-                <span className="w-3.5 h-3.5 border border-gray-400 border-t-transparent rounded-full animate-spin" />
-                {t.loading}
-              </span>
-            ) : (
-              <img src="/icons/load-more.svg" alt={t.loadMoreAlt} width={200} height={62} />
-            )}
-          </button>
+      {/* Sentinel element — IntersectionObserver watches this to trigger next page load */}
+      <div ref={sentinelRef} className="h-1" />
+
+      {loading && (
+        <div className="flex justify-center py-8">
+          <span className="w-5 h-5 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
         </div>
       )}
 
