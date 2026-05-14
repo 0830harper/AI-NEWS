@@ -167,7 +167,7 @@ export default function CategoryFeed({ category, showCategory = false }: Props) 
 
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [fetchPage, isZh, translateArticles])
+  }, [fetchPage, isZh, translateArticles, initialLoading])
 
   if (initialLoading) {
     return (
